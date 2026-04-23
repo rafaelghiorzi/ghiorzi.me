@@ -1,8 +1,17 @@
+'use client';
+import BlobScene from '@/components/blob';
+import { useLang } from '@/context/LanguageContext';
 
 export default function Home() {
+  const { t } = useLang();
+
   return (
-    <main className="flex my-auto self-center">
-      Work in progress...
-    </main>
+  <main>
+    <article>
+      Isso é um teste de card
+    </article>
+
+    <BlobScene></BlobScene>
+  </main>
   );
 }
