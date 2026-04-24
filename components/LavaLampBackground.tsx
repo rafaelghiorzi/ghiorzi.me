@@ -6,8 +6,6 @@ import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
 
-// ─── Shaders ──────────────────────────────────────────────────────────────────
-
 const vertexShader = /* glsl */ `
   varying vec2 vUv;
   void main() {
@@ -44,7 +42,6 @@ const fragmentShader = /* glsl */ `
 
   float sdSphere(vec3 p, vec3 c, float r) { return length(p - c) - r; }
 
-  /* Subtle surface wobble — baked into time so it's cheap */
   float wobble(vec3 p) {
     float t = uTime * 0.5;
     return sin(p.x * 4.0 + t) * sin(p.y * 3.7 - t * 1.1) * 0.018;
@@ -52,7 +49,7 @@ const fragmentShader = /* glsl */ `
 
   float sdMetaballs(vec3 p) {
     float d = 10.0;
-    for (int i = 0; i < 12; i++) {
+    for (int i = 0; i < 8; i++) {
       if (i >= uBlobCount) break;
       d = smin(d, sdSphere(p, uBlobs[i].xyz, uBlobs[i].w), 0.18);
     }
@@ -61,7 +58,7 @@ const fragmentShader = /* glsl */ `
 
   float metaballField(vec3 p) {
     float f = 0.0;
-    for (int i = 0; i < 12; i++) {
+    for (int i = 0; i < 8; i++) {
       if (i >= uBlobCount) break;
       float dist = max(length(p - uBlobs[i].xyz), 0.0005);
       f += (uBlobs[i].w * uBlobs[i].w) / (dist * dist);
@@ -71,7 +68,7 @@ const fragmentShader = /* glsl */ `
 
   float internalGlow(vec3 p) {
     float g = 0.0;
-    for (int i = 0; i < 12; i++) {
+    for (int i = 0; i < 8; i++) {
       if (i >= uBlobCount) break;
       float dist = length(p - uBlobs[i].xyz);
       g += (uBlobs[i].w * uBlobs[i].w) / (dist * dist + 0.02);
@@ -114,24 +111,22 @@ const fragmentShader = /* glsl */ `
       vec3  n       = getNormal(hitPos);
       vec3  viewDir = normalize(ro - hitPos);
 
-      /* colour: base at bottom, hot at top */
-      float heat   = clamp(hitPos.y * 0.5 + 0.5, 0.0, 1.0);
-      vec3  lava   = mix(uBaseColor, uHotColor, heat * heat);
+      float heat  = clamp(hitPos.y * 0.5 + 0.5, 0.0, 1.0);
+      vec3  lava  = mix(uBaseColor, uHotColor, heat * heat);
 
-      /* lighting */
-      vec3  lightA  = normalize(vec3( 0.5,  0.9, 0.6));
-      vec3  lightB  = normalize(vec3(-0.6,  0.3, 0.8));
-      float specA   = pow(max(dot(reflect(-lightA, n), viewDir), 0.0), 72.0);
-      float specB   = pow(max(dot(reflect(-lightB, n), viewDir), 0.0), 28.0);
+      vec3  lightA = normalize(vec3( 0.5,  0.9, 0.6));
+      vec3  lightB = normalize(vec3(-0.6,  0.3, 0.8));
+      float specA  = pow(max(dot(reflect(-lightA, n), viewDir), 0.0), 72.0);
+      float specB  = pow(max(dot(reflect(-lightB, n), viewDir), 0.0), 28.0);
       float fresnel = pow(1.0 - max(dot(n, viewDir), 0.0), 3.0);
 
       float wrap  = 0.4;
       float wrapA = max((dot(n, lightA) + wrap) / (1.0 + wrap), 0.0);
       float wrapB = max((dot(n, lightB) + wrap) / (1.0 + wrap), 0.0);
 
-      float ig         = internalGlow(hitPos);
-      float fieldGlow  = smoothstep(0.6, 1.8, field);
-      float inner      = clamp(metaballField(hitPos - n * 0.07) * 0.18, 0.0, 1.0);
+      float ig        = internalGlow(hitPos);
+      float fieldGlow = smoothstep(0.6, 1.8, field);
+      float inner     = clamp(metaballField(hitPos - n * 0.07) * 0.18, 0.0, 1.0);
 
       vec3 diffuse  = lava * (0.12 + 0.88 * (wrapA * 0.85 + wrapB * 0.35));
       vec3 spec     = vec3(0.9) * (specA + 0.35 * specB);
@@ -141,14 +136,11 @@ const fragmentShader = /* glsl */ `
       emission     += lava * ig        * 0.06 * uGlow;
 
       vec3 color = diffuse + spec * 0.75 + emission;
-      /* mild contrast punch */
       color = mix(color, color * color * 1.3, 0.3);
 
-      /* soft alpha fade at blob edges for transparent bg blending */
       float edgeFade = clamp(1.0 - smoothstep(0.8, 1.05, length(hitPos.xy) / 2.2), 0.0, 1.0);
       gl_FragColor = vec4(color, edgeFade);
     } else {
-      /* fully transparent where no blob */
       gl_FragColor = vec4(0.0);
     }
   }
@@ -161,13 +153,22 @@ interface Blob {
     radius: number;
     baseX: number;
     baseY: number;
+    homeX: number;
+    homeY: number;
     ampX: number;
     ampY: number;
     freqX: number;
     freqY: number;
     phaseX: number;
     phaseY: number;
+    mouseSensitivity: number;
 }
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const MAX_BLOBS = 8;
+const CAM_Z = 5;
+const CAM_FOV = 40;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -181,27 +182,42 @@ function mulberry32(seed: number) {
     };
 }
 
-const MAX_BLOBS = 8;
+/** Visible half-extents at z=0 for our fixed camera setup */
+function visibleBounds(aspect: number) {
+    const halfH = Math.tan(THREE.MathUtils.degToRad(CAM_FOV * 0.5)) * CAM_Z;
+    const halfW = halfH * aspect;
+    return { halfW, halfH };
+}
 
-function initBlobs(rand: () => number, randSize: () => number): Blob[] {
+function initBlobs(
+    rand: () => number,
+    randSize: () => number,
+    aspect: number,
+): Blob[] {
+    const { halfW, halfH } = visibleBounds(aspect);
+
     return Array.from({ length: MAX_BLOBS }, () => {
         const sizeFactor = randSize();
         const radius = 0.1 + sizeFactor * 0.22;
+
+        // 80% of screen edges so blobs are fully visible on spawn
+        const bx = (rand() - 0.5) * 2 * halfW * 0.8;
+        const by = (rand() - 0.5) * 2 * halfH * 0.8;
+
         return {
             pos: new THREE.Vector3(0, 0, 0),
             radius,
-            // spread centres across a wide area so they feel screen-filling
-            baseX: (rand() - 0.5) * 3.2,
-            baseY: (rand() - 0.5) * 1.8,
-            // each blob wanders in a lazy ellipse around its base
+            baseX: bx,
+            baseY: by,
+            homeX: bx, // permanent anchor — blobs always spring back here
+            homeY: by,
             ampX: 0.18 + rand() * 0.32,
             ampY: 0.14 + rand() * 0.28,
-            // slow frequencies — full cycle every ~25–55 s
             freqX: 0.1 + rand() * 0.12,
             freqY: 0.08 + rand() * 0.1,
-            // random start phase so no two blobs move in sync
             phaseX: rand() * Math.PI * 2,
             phaseY: rand() * Math.PI * 2,
+            mouseSensitivity: rand() * 0.8,
         };
     });
 }
@@ -218,8 +234,8 @@ interface LavaLampBackgroundProps {
 }
 
 export default function LavaLampBackground({
-    baseColor = "#1a1aff", // deeper indigo
-    hotColor = "#60efff", // icy cyan
+    baseColor = "#1a1aff",
+    hotColor = "#60efff",
     glow = 0.55,
     bloom = 0.18,
     blobCount = 8,
@@ -228,17 +244,17 @@ export default function LavaLampBackground({
     const mountRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        const container = mountRef.current;
+        const container = mountRef.current!;
         if (!container) return;
 
         const BLOB_COUNT = Math.min(blobCount, MAX_BLOBS);
 
-        // ── Renderer ────────────────────────────────────────────────────────────
+        // ── Renderer ──────────────────────────────────────────────────────────
         const renderer = new THREE.WebGLRenderer({
             antialias: true,
             alpha: true,
         });
-        renderer.setClearColor(0x000000, 0); // transparent clear
+        renderer.setClearColor(0x000000, 0);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
         renderer.setSize(container.clientWidth, container.clientHeight);
         renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -246,26 +262,50 @@ export default function LavaLampBackground({
         renderer.toneMappingExposure = 1.0;
         container.appendChild(renderer.domElement);
 
-        // ── Scene ────────────────────────────────────────────────────────────────
+        // ── Scene & camera ────────────────────────────────────────────────────
         const scene = new THREE.Scene();
         const screenCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
-        // Narrow FOV = more orthographic feel, camera straight on
-        const camera = new THREE.PerspectiveCamera(
-            32,
-            container.clientWidth / container.clientHeight,
-            0.01,
-            20,
-        );
-        camera.position.set(0, 0, 3.8);
+        const aspect = container.clientWidth / container.clientHeight;
+        const camera = new THREE.PerspectiveCamera(CAM_FOV, aspect, 0.01, 20);
+        camera.position.set(0, 0, CAM_Z);
         camera.lookAt(0, 0, 0);
 
-        // ── Blobs ────────────────────────────────────────────────────────────────
+        // ── Blobs — spawned after camera aspect is known ──────────────────────
         const rand = mulberry32(42);
         const randSize = mulberry32(139);
-        const blobs = initBlobs(rand, randSize);
+        const blobs = initBlobs(rand, randSize, aspect);
 
-        // ── Uniforms ─────────────────────────────────────────────────────────────
+        // ── Mouse → world coords ──────────────────────────────────────────────
+        let mouseX = 0;
+        let mouseY = 0;
+
+        function screenToWorld(clientX: number, clientY: number) {
+            const { halfW, halfH } = visibleBounds(camera.aspect);
+            mouseX = (clientX / container.clientWidth - 0.5) * 2 * halfW;
+            mouseY = -(clientY / container.clientHeight - 0.5) * 2 * halfH;
+        }
+
+        function onMouseMove(e: MouseEvent) {
+            screenToWorld(e.clientX, e.clientY);
+        }
+        function onTouchMove(e: TouchEvent) {
+            screenToWorld(e.touches[0].clientX, e.touches[0].clientY);
+        }
+
+        window.addEventListener("mousemove", onMouseMove);
+        window.addEventListener("touchmove", onTouchMove, { passive: true });
+
+        // ── Scroll parallax ───────────────────────────────────────────────────
+        function onScroll() {
+            const maxScroll = document.body.scrollHeight - window.innerHeight;
+            const progress = maxScroll > 0 ? window.scrollY / maxScroll : 0;
+            camera.position.y = -progress * 0.6;
+            camera.lookAt(0, camera.position.y, 0);
+        }
+        window.addEventListener("scroll", onScroll);
+
+        // ── Uniforms ──────────────────────────────────────────────────────────
         const blobUniforms = Array.from(
             { length: MAX_BLOBS },
             () => new THREE.Vector4(),
@@ -297,13 +337,13 @@ export default function LavaLampBackground({
                 uniforms,
                 vertexShader,
                 fragmentShader,
-                transparent: true, // needed so alpha=0 pixels are truly clear
+                transparent: true,
             }),
         );
         mesh.frustumCulled = false;
         scene.add(mesh);
 
-        // ── Post-processing ───────────────────────────────────────────────────────
+        // ── Post-processing ───────────────────────────────────────────────────
         const composer = new EffectComposer(renderer);
         composer.addPass(new RenderPass(scene, screenCamera));
         const bloomPass = new UnrealBloomPass(
@@ -317,7 +357,7 @@ export default function LavaLampBackground({
         );
         composer.addPass(bloomPass);
 
-        // ── Camera uniform helpers ────────────────────────────────────────────────
+        // ── Camera uniforms ───────────────────────────────────────────────────
         const _pos = new THREE.Vector3();
         const _right = new THREE.Vector3();
         const _up = new THREE.Vector3();
@@ -339,10 +379,27 @@ export default function LavaLampBackground({
             );
         }
 
-        // ── Simulation — pure sine-wave orbits, no velocity ───────────────────────
+        // ── Simulation ────────────────────────────────────────────────────────
+        const REPEL = 0.008;
+        const RETURN = 0.012; // stronger than repel so blobs always drift home
+
         function stepSimulation(time: number) {
             for (let i = 0; i < BLOB_COUNT; i++) {
                 const b = blobs[i];
+
+                // push away from cursor
+                const dx = b.baseX - mouseX;
+                const dy = b.baseY - mouseY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const falloff = 1.0 / (1.0 + dist * dist * 8.0);
+                b.baseX += dx * REPEL * b.mouseSensitivity * falloff;
+                b.baseY += dy * REPEL * b.mouseSensitivity * falloff;
+
+                // spring back toward home
+                b.baseX += (b.homeX - b.baseX) * RETURN;
+                b.baseY += (b.homeY - b.baseY) * RETURN;
+
+                // lazy sine-wave orbit around the drifting base
                 b.pos.x =
                     b.baseX + Math.sin(time * b.freqX + b.phaseX) * b.ampX;
                 b.pos.y =
@@ -362,7 +419,7 @@ export default function LavaLampBackground({
             }
         }
 
-        // ── Render loop ───────────────────────────────────────────────────────────
+        // ── Render loop ───────────────────────────────────────────────────────
         let animFrameId: number;
         let time = 0;
         let lastTime = performance.now();
@@ -376,14 +433,13 @@ export default function LavaLampBackground({
             syncBlobUniforms();
             uniforms.uTime.value = time;
             syncCameraUniforms();
-
             composer.render();
             animFrameId = requestAnimationFrame(animate);
         }
 
         animFrameId = requestAnimationFrame(animate);
 
-        // ── Resize ────────────────────────────────────────────────────────────────
+        // ── Resize ────────────────────────────────────────────────────────────
         const observer = new ResizeObserver(() => {
             const w = container.clientWidth;
             const h = container.clientHeight;
@@ -397,8 +453,11 @@ export default function LavaLampBackground({
         });
         observer.observe(container);
 
-        // ── Cleanup ───────────────────────────────────────────────────────────────
+        // ── Cleanup ───────────────────────────────────────────────────────────
         return () => {
+            window.removeEventListener("mousemove", onMouseMove);
+            window.removeEventListener("touchmove", onTouchMove);
+            window.removeEventListener("scroll", onScroll);
             cancelAnimationFrame(animFrameId);
             observer.disconnect();
             renderer.dispose();

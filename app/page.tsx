@@ -6,10 +6,25 @@ import { ProjectCard } from "@/components/ProjectCard";
 import { useLang } from "@/context/LanguageContext";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Image from "next/image";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function Home() {
     const { t } = useLang();
+
+    // Controle para desativar parallax no mobile (< 768px)
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+
+        // Verifica na montagem inicial
+        handleResize();
+
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
 
     // Referências para observar o scroll individual de cada seção
     const projectRef = useRef(null);
@@ -21,11 +36,11 @@ export default function Home() {
     const opacity = useTransform(scrollY, [0, 1000], [1, 0]);
 
     /* LÓGICA DO PARALLAX:
-    A coluna esquerda não terá animação de Y (ficará parada em y=0).
-    A coluna direita vai de y=150 (mais baixa) até y=-150 (mais alta).
-    Exatamente no meio da tela (scroll 0.5), a direita estará no y=0,
-    encontrando-se perfeitamente com a coluna da esquerda.
-  */
+     A coluna esquerda não terá animação de Y (ficará parada em y=0).
+     A coluna direita vai de y=150 (mais baixa) até y=-150 (mais alta).
+     Exatamente no meio da tela (scroll 0.5), a direita estará no y=0,
+     encontrando-se perfeitamente com a coluna da esquerda.
+    */
 
     // Parallax Projetos (Apenas coluna direita)
     const { scrollYProgress: projectScroll } = useScroll({
@@ -63,10 +78,11 @@ export default function Home() {
             {/* HERO SECTION */}
             <section
                 id="home"
-                className="min-h-screen flex items-center px-6 max-w-[80%] mx-auto"
+                className="min-h-screen flex items-center px-6 max-w-full md:max-w-[80%] mx-auto"
             >
                 <motion.div
-                    style={{ y: heroY, opacity }}
+                    // Condição aplicada: Y estático (0) se for mobile
+                    style={{ y: isMobile ? 100 : heroY, opacity }}
                     className="bg-[#161410]/60 rounded-[3rem] p-10 md:p-20 flex flex-col md:flex-row gap-4 items-center justify-around w-full shadow-2xl"
                 >
                     <motion.div
@@ -166,7 +182,7 @@ export default function Home() {
             {/* INTRODUCTION SECTION */}
             <section
                 id="about"
-                className="bg-[#161410]/60 rounded-[3rem] p-10 md:p-20 py-24 px-6 max-w-7xl mx-auto"
+                className="p-10 pt-32 md:pt-10 md:p-20 py-24 px-6 mx-auto max-w-[80%] "
             >
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
@@ -201,7 +217,7 @@ export default function Home() {
             <section
                 id="projects"
                 ref={projectRef}
-                className="pb-24 pt-64 px-6 max-w-6xl mx-auto"
+                className="pb-24 pt-20 md:pt-64 px-6 max-w-6xl mx-auto"
             >
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
@@ -235,7 +251,8 @@ export default function Home() {
 
                     {/* Coluna Direita - Começa baixa, sobe rápido (alcança a esquerda) */}
                     <motion.div
-                        style={{ y: projectRightY }}
+                        // Condição aplicada: Y estático (0) se for mobile
+                        style={{ y: isMobile ? 0 : projectRightY }}
                         className="flex flex-col gap-8"
                     >
                         {projects.right.map((proj, idx) => (
@@ -257,7 +274,7 @@ export default function Home() {
             <section
                 id="experience"
                 ref={experienceRef}
-                className="py-32 px-6 max-w-6xl mx-auto mb-20"
+                className="pb-32 pt-20 md:pt-64 px-6 max-w-6xl mx-auto mb-20"
             >
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
@@ -295,7 +312,8 @@ export default function Home() {
 
                     {/* Coluna Direita - Começa baixa, sobe rápido (alcança a esquerda) */}
                     <motion.div
-                        style={{ y: expRightY }}
+                        // Condição aplicada: Y estático (0) se for mobile
+                        style={{ y: isMobile ? 0 : expRightY }}
                         className="flex flex-col gap-16 md:gap-32 md:mt-48"
                     >
                         {experiences.right.map((exp, idx) => (
@@ -342,7 +360,7 @@ export default function Home() {
                         delay: 0.4,
                         ease: [0.22, 1, 0.36, 1],
                     }}
-                    className="mt-8 text-xl md:text-2xl max-w-4xl leading-relaxed"
+                    className="mt-8 mx-auto text-center text-xl md:text-2xl max-w-4xl leading-relaxed"
                 >
                     {t.contact.desc}
                 </motion.p>
