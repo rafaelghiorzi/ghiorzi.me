@@ -1,36 +1,141 @@
 export const dictionary = {
   pt: {
-    nav: { hero: "Início", about: "O que faço", exp: "Experiência", projects: "Projetos", stack: "Stack", contact: "Contato" },
-    hero: { greeting: "Olá, eu sou", role: "Desenvolvedor de Software", desc: "Focado em transformar teoria em código, com forte interesse em fundamentos da computação e lógica.", cv: "Baixar CV" },
-    projects: { title: "Projetos Recentes", view: "Ver Projeto" },
+    nav: {
+      name: "Rafael Ghiorzi",
+      role: "Engenheiro de Software",
+
+      hero: "Início",
+      exp: "Carreira",
+      projects: "Projetos",
+      contact: "Contato",
+    },
+
+    hero: {
+      title: "Desenvolvendo software para o mundo real",
+      desc: "Focado em transformar teoria em sistemas robustos...",
+    },
+
+    projects: {
+      title: "Projetos recentes",
+      desc: "Tenho trabalhado nos seguintes projetos",
+    },
     projectsData: [
-      { title: "Conversor NFA para AFNG", desc: "Ferramenta para converter Autômatos Finitos Não Determinísticos com transições epsilon para Autômatos Finitos Não Determinísticos Generalizados para derivar expressões regulares.", img: "/images/project1.png" },
-      { title: "Visualizador de Árvore Sintática", desc: "Aplicação interativa para estudo de Gramáticas Livres de Contexto (CFG) e renderização de árvores sintáticas.", img: "/images/project2.png" }
+      {
+        title: "IpeaPub",
+        desc: "Ferramenta de RAG que eu não vou explicar",
+        tech: "TypeScript, PostgreSQL",
+        img: "/pato.jpg",
+      },
+      {
+        title: "Homelab",
+        desc: "Repositório que armazena todas minhas coisas de homelab",
+        tech: "TypeScript, PostgreSQL",
+        img: "/img2.png",
+      },
     ],
-    experience: { title: "Experiência Profissional" },
+
+    experience: {
+      title: "Experiência profissional",
+      desc: "Veja por onde eu já passei",
+    },
     expData: [
-      { role: "Desenvolvedor Full Stack", company: "Tech Corp", time: "2023 - Presente", desc: "Desenvolvimento de aplicações escaláveis utilizando Next.js e microsserviços." }
+      {
+        role: "Desenvolvedor",
+        company: "Tech corp",
+        time: "2024 - Presente",
+        desc: "Descrição do trabalho",
+        tech: "Typescript, PostgreSQL",
+        img: "/img3.png",
+      },
+      {
+        role: "Desenvolvedor",
+        company: "Tech corp",
+        time: "2024 - Presente",
+        desc: "Descrição do trabalho",
+        tech: "Typescript, PostgreSQL",
+        img: "/img3.png",
+      },
     ],
-    stack: { title: "Stack de Tecnologias" },
-    contact: { title: "Entre em Contato", name: "Nome", email: "Email", msg: "Mensagem", send: "Enviar Mensagem", success: "Mensagem enviada com sucesso!" },
-    sidebar: { listening: "Ouvindo agora", artist: "Jon Bellion" }
+
+    contact: {
+      title: "Contato",
+      desc: "Eu nunca recusei uma boa música.",
+      github: "teste",
+      linkedin: "teste",
+      email: "teste",
+    },
+
+    copyright: "© Copyright 2026 Rafael Ghiorzi. Todos os direitos reservados",
   },
+
   en: {
-    nav: { hero: "Home", about: "What I Do", exp: "Experience", projects: "Projects", stack: "Stack", contact: "Contact" },
-    hero: { greeting: "Hi, I am", role: "Software Developer", desc: "Focused on turning theory into code, with a strong interest in computing fundamentals and logic.", cv: "Download CV" },
-    projects: { title: "Recent Projects", view: "View Project" },
+    nav: {
+      name: "Rafael Ghiorzi",
+      role: "Software Engineer",
+
+      hero: "Home",
+      exp: "About",
+      projects: "Projects",
+      contact: "Contact",
+    },
+
+    hero: {
+      title: "Building software for the real world",
+      desc: "Focused on turning theory into robust systems...",
+    },
+
+    projects: {
+      title: "Recent projects",
+      desc: "Here are some of the projects I've been working on",
+    },
     projectsData: [
-      { title: "NFA to AFNG Converter", desc: "Tool to convert Nondeterministic Finite Automata with epsilon transitions into Generalized Nondeterministic Finite Automata to derive regular expressions.", img: "/images/project1.png" },
-      { title: "Syntax Tree Visualizer", desc: "Interactive application for studying Context-Free Grammars (CFG) and rendering syntax trees.", img: "/images/project2.png" }
+      {
+        title: "IpeaPub",
+        desc: "A RAG tool I won't bother explaining",
+        tech: "TypeScript, PostgreSQL",
+        img: "/img1.png",
+      },
+      {
+        title: "Homelab",
+        desc: "Repository that stores all my homelab stuff",
+        tech: "TypeScript, PostgreSQL",
+        img: "/img2.png",
+      },
     ],
-    experience: { title: "Professional Experience" },
+
+    experience: {
+      title: "Professional experience",
+      desc: "A look at where I've worked",
+    },
     expData: [
-      { role: "Full Stack Developer", company: "Tech Corp", time: "2023 - Present", desc: "Development of scalable applications using Next.js and microservices." }
+      {
+        role: "Developer",
+        company: "Tech corp",
+        time: "2024 - Present",
+        desc: "Job description",
+        tech: "Typescript, PostgreSQL",
+        img: "/img3.png",
+      },
+      {
+        role: "Developer",
+        company: "Tech corp",
+        time: "2024 - Present",
+        desc: "Job description",
+        tech: "Typescript, PostgreSQL",
+        img: "/img3.png",
+      },
     ],
-    stack: { title: "Tech Stack" },
-    contact: { title: "Get in Touch", name: "Name", email: "Email", msg: "Message", send: "Send Message", success: "Message sent successfully!" },
-    sidebar: { listening: "Now Listening", artist: "Jon Bellion" }
-  }
+
+    contact: {
+      title: "Contact",
+      desc: "I've never refused good music.",
+      github: "",
+      linkedin: "",
+      email: "",
+    },
+
+    copyright: "© Copyright 2026 Rafael Ghiorzi. All Rights Reserved",
+  },
 };
 
-export type Lang = 'pt' | 'en';
+export type Lang = "pt" | "en";

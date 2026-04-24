@@ -43,10 +43,10 @@ export default function BlobScene() {
 
     // --- MATERIAL (cera) ---
     const material = new THREE.MeshPhysicalMaterial({
-      color: 0xffd7a1,
-      roughness: 0.7,
-      metalness: 0.0,
-      transmission: 0.0,
+      color: 0x1010ff,
+      roughness: 0.6,
+      metalness: 0.2,
+      transmission: 0.6,
       thickness: 0.5,
       clearcoat: 0.0,
       sheen: 0.3,
@@ -81,34 +81,11 @@ export default function BlobScene() {
     const timer = new THREE.Timer();
     const vertex = new THREE.Vector3();
 
-    // --- VIEW BOUNDS ---
-    const getViewBounds = () => {
-      const distance = camera.position.z;
-      const vFOV = (camera.fov * Math.PI) / 180;
-
-      const viewHeight = 2 * Math.tan(vFOV / 2) * distance;
-      const viewWidth = viewHeight * camera.aspect;
-
-      return { width: viewWidth, height: viewHeight };
-    };
-
-    // --- CONFIG ---
-    const margin = 0.4;
-    const containStrength = 0.04;
-    const bounce = 0.4;
-
     const animate = () => {
       requestAnimationFrame(animate);
 
       timer.update();
       const time = timer.getElapsed();
-
-      const { width, height } = getViewBounds();
-
-      const bounds = {
-        x: width / 2,
-        y: height / 2,
-      };
 
       // --- Mouse → world ---
       raycaster.setFromCamera(mouse, camera);
@@ -121,42 +98,8 @@ export default function BlobScene() {
       const force = Math.min(distance * 0.01, 0.03);
 
       velocity.add(temp.normalize().multiplyScalar(force));
-      velocity.multiplyScalar(0.85);
+      velocity.multiplyScalar(0.7);
       mesh.position.add(velocity);
-
-      // --- SOFT CONTAINMENT ---
-      if (mesh.position.x > bounds.x - margin) {
-        velocity.x -= (mesh.position.x - (bounds.x - margin)) * containStrength;
-      }
-      if (mesh.position.x < -bounds.x + margin) {
-        velocity.x += ((-bounds.x + margin) - mesh.position.x) * containStrength;
-      }
-
-      if (mesh.position.y > bounds.y - margin) {
-        velocity.y -= (mesh.position.y - (bounds.y - margin)) * containStrength;
-      }
-      if (mesh.position.y < -bounds.y + margin) {
-        velocity.y += ((-bounds.y + margin) - mesh.position.y) * containStrength;
-      }
-
-      // --- HARD COLLISION ---
-      if (mesh.position.x > bounds.x) {
-        mesh.position.x = bounds.x;
-        velocity.x *= -bounce;
-      }
-      if (mesh.position.x < -bounds.x) {
-        mesh.position.x = -bounds.x;
-        velocity.x *= -bounce;
-      }
-
-      if (mesh.position.y > bounds.y) {
-        mesh.position.y = bounds.y;
-        velocity.y *= -bounce;
-      }
-      if (mesh.position.y < -bounds.y) {
-        mesh.position.y = -bounds.y;
-        velocity.y *= -bounce;
-      }
 
       // --- DEFORMATION + ACHATAMENTO ---
       const position = geometry.attributes.position;
@@ -169,12 +112,11 @@ export default function BlobScene() {
 
         // noise base
         const noise =
-          Math.sin(vertex.x * 3 + time * 1.1) +
-          Math.sin(vertex.y * 2 + time * 0.7 + 10) +
-          Math.sin(vertex.z * 4 + time * 1.3 + 20);
+          Math.sin(vertex.x * 5 + time * 1.5) +
+          Math.sin(vertex.y * 4 + time * 1.2 + 10) +
+          Math.sin(vertex.z * 6 + time * 1.8 + 20);
 
         let scale = 1 + noise * 0.1;
-
         // movimento direcional
         if (speed_deform > 0.0001) {
           const normal = vertex.clone().normalize();
@@ -185,38 +127,11 @@ export default function BlobScene() {
           }
         }
 
-        const tension = 0.5;
+        const tension = 0.15;
         const finalRadius = 1 + (scale - 1) * (1 - tension);
 
         vertex.normalize().multiplyScalar(finalRadius);
-
-        // --- WORLD POSITION ---
-        const worldVertex = vertex.clone().add(mesh.position);
-
-        const softness = 0.25;
-
-        // colisões por vértice (ACHATA)
-        if (worldVertex.x > bounds.x) {
-          const penetration = worldVertex.x - bounds.x;
-          vertex.x -= penetration * (1 + softness);
-        }
-
-        if (worldVertex.x < -bounds.x) {
-          const penetration = -bounds.x - worldVertex.x;
-          vertex.x += penetration * (1 + softness);
-        }
-
-        if (worldVertex.y > bounds.y) {
-          const penetration = worldVertex.y - bounds.y;
-          vertex.y -= penetration * (1 + softness);
-        }
-
-        if (worldVertex.y < -bounds.y) {
-          const penetration = -bounds.y - worldVertex.y;
-          vertex.y += penetration * (1 + softness);
-        }
-
-        position.setXYZ(i, vertex.x, vertex.y, vertex.z);
+        position.setXYZ(i, vertex.x, vertex.y, vertex.z); // Apply the deformation to the vertex
       }
 
       position.needsUpdate = true;
@@ -226,16 +141,16 @@ export default function BlobScene() {
       if (speed_deform > 0.0001) {
         const dir = velocity.clone().normalize();
 
-        const base = 0.3 * (1 + Math.sin(time * 0.5) * 0.05);
+        const base = 0.4 * (1 + Math.sin(time * 1.5) * 0.12); // Faster and more visible pulse
         const stretch = speed_deform * 1.5;
 
         mesh.scale.set(
           base + Math.abs(dir.x) * stretch,
           base + Math.abs(dir.y) * stretch,
-          base + Math.abs(dir.z) * stretch
+          base + Math.abs(dir.z) * stretch,
         );
       } else {
-        const base = 0.3 * (1 + Math.sin(time * 0.5) * 0.05);
+        const base = 0.4 * (1 + Math.sin(time * 1.5) * 0.12);
         mesh.scale.set(base, base, base);
       }
 
@@ -253,14 +168,5 @@ export default function BlobScene() {
     };
   }, []);
 
-  return (
-    <div
-      ref={mountRef}
-      style={{
-        width: "500px",
-        height: "500px",
-        background: "#f5f5f5",
-      }}
-    />
-  );
+  return <div ref={mountRef} />;
 }
