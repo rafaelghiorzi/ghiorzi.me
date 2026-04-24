@@ -68,7 +68,7 @@ export default function Home() {
               delay: 0.4,
               ease: [0.22, 1, 0.36, 1],
             }}
-            className="relative h-80 w-80 mb-8 rounded-3xl block md:hidden mt-4 bg-amber-50 overflow-hidden"
+            className="relative h-80 w-full mb-8 rounded-3xl block md:hidden mt-4 bg-amber-50 overflow-hidden"
           >
             <Image
               src="/eu.png"
@@ -103,6 +103,31 @@ export default function Home() {
             >
               {t.hero.desc}
             </motion.p>
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: 0.8,
+                delay: 0.2,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+              className="flex flex-row gap-8 mt-4"
+            >
+              <a
+                className="hover:underline hover:text-[#F15025] transition-all duration-200"
+                href={t.contact.linkedin}
+                target="_blank"
+              >
+                Linkedin
+              </a>
+              <a
+                className="hover:underline hover:text-[#F15025] transition-all duration-200"
+                href={t.contact.github}
+                target="_blank"
+              >
+                GitHub
+              </a>
+            </motion.div>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -153,6 +178,7 @@ export default function Home() {
                 desc={proj.desc}
                 img={proj.img}
                 tech={proj.tech}
+                link={proj.link}
               />
             ))}
           </div>
@@ -169,6 +195,7 @@ export default function Home() {
                 desc={proj.desc}
                 img={proj.img}
                 tech={proj.tech}
+                link={proj.link}
               />
             ))}
           </motion.div>

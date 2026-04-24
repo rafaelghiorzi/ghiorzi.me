@@ -73,7 +73,7 @@ export function Navbar() {
 
           <button
             onClick={toggleLang}
-            className="ml-4 px-3 py-1.5 bg-[#f8fafb] hover:bg-[#e5f5ff] rounded-full text-sm transition-colors duration-300"
+            className="ml-4 px-3 py-1.5 bg-[#f8fafb] hover:bg-[#F15025]/50 hover:cursor-pointer rounded-full text-sm transition-colors duration-300"
           >
             {lang === "pt" ? "EN" : "PT"}
           </button>

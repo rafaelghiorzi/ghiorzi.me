@@ -33,7 +33,12 @@ export function ExperienceCard({
       className="bg-[#F3EFF5]/60 rounded-4xl p-8 flex flex-col md:flex-row justify-between gap-6 shadow-xl hover:bg-[#F15025]/20 transition-colors duration-100"
     >
       <div className="flex flex-col max-w-xl">
-        <h3 className="text-xl font-bold text-gray-900">{role}</h3>
+        <div className="flex flex-col md:flex-row justify-between md:items-center mb-4">
+          <h3 className="text-xl font-bold text-gray-900">{role}</h3>
+          <div className="text-sm font-medium text-gray-400 shrink-0">
+            {time}
+          </div>
+        </div>
         <span className="text-md font-medium text-gray-500 mb-4">
           {company}
         </span>
@@ -49,8 +54,6 @@ export function ExperienceCard({
           ))}
         </div>
       </div>
-
-      <div className="text-sm font-medium text-gray-400 shrink-0">{time}</div>
     </motion.div>
   );
 }
