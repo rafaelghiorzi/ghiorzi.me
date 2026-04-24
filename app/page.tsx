@@ -56,8 +56,8 @@ export default function Home() {
     const experiences = splitData(t.expData);
 
     return (
-        <main className="bg-[#F3EFF5]/20 min-h-screen w-full font-sans selection:bg-[#e5f5ff] selection:text-black overflow-hidden">
-            <LavaLampBackground />
+        <main className="min-h-screen w-full font-sans text-white selection:bg-[#e5f5ff] selection:text-black overflow-hidden">
+            <LavaLampBackground baseColor="#4400ff" hotColor="#00aaff" />
             <Navbar />
 
             {/* HERO SECTION */}
@@ -67,7 +67,7 @@ export default function Home() {
             >
                 <motion.div
                     style={{ y: heroY, opacity }}
-                    className="bg-[#F3EFF5]/60 rounded-[3rem] p-10 md:p-20 flex flex-col md:flex-row gap-4 items-center justify-around w-full shadow-2xl"
+                    className="bg-[#161410]/60 rounded-[3rem] p-10 md:p-20 flex flex-col md:flex-row gap-4 items-center justify-around w-full shadow-2xl"
                 >
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
@@ -78,7 +78,7 @@ export default function Home() {
                             delay: 0.4,
                             ease: [0.22, 1, 0.36, 1],
                         }}
-                        className="relative h-80 w-full mb-8 rounded-3xl block md:hidden mt-4 bg-amber-50 overflow-hidden"
+                        className="relative h-80 w-full mb-8 rounded-3xl block md:hidden mt-4 overflow-hidden"
                     >
                         <Image
                             src="/eu.png"
@@ -97,7 +97,7 @@ export default function Home() {
                                 delay: 0.2,
                                 ease: [0.22, 1, 0.36, 1],
                             }}
-                            className="text-4xl md:text-5xl font-extrabold text-[#F15025] tracking-tight w-full leading-[1.1]"
+                            className="text-4xl md:text-5xl font-extrabold text-[#FFD166] tracking-tight w-full leading-[1.1]"
                         >
                             {t.hero.title}
                         </motion.h1>
@@ -111,7 +111,7 @@ export default function Home() {
                                 delay: 0.4,
                                 ease: [0.22, 1, 0.36, 1],
                             }}
-                            className="mt-8 text-xl md:text-2xl text-[#0F1A20] max-w-2xl leading-relaxed"
+                            className="mt-8 text-xl md:text-2xl max-w-2xl leading-relaxed"
                         >
                             {t.hero.desc}
                         </motion.p>
@@ -127,14 +127,14 @@ export default function Home() {
                             className="flex flex-row gap-8 mt-4"
                         >
                             <a
-                                className="hover:underline hover:text-[#F15025] transition-all duration-200"
+                                className="hover:underline hover:text-[#FFD166] transition-all duration-200"
                                 href={t.contact.linkedin}
                                 target="_blank"
                             >
                                 Linkedin
                             </a>
                             <a
-                                className="hover:underline hover:text-[#F15025] transition-all duration-200"
+                                className="hover:underline hover:text-[#FFD166] transition-all duration-200"
                                 href={t.contact.github}
                                 target="_blank"
                             >
@@ -164,7 +164,10 @@ export default function Home() {
             </section>
 
             {/* INTRODUCTION SECTION */}
-            <section id="about" className="py-24 px-6 max-w-4xl mx-auto">
+            <section
+                id="about"
+                className="bg-[#161410]/60 rounded-[3rem] p-10 md:p-20 py-24 px-6 max-w-7xl mx-auto"
+            >
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -175,7 +178,7 @@ export default function Home() {
                         ease: [0.22, 1, 0.36, 1],
                     }}
                 >
-                    <h2 className="text-4xl font-bold text-[#F15025]/80 mb-8">
+                    <h2 className="text-4xl font-bold text-[#FFD166]/80 mb-8">
                         {t.introduction.title}
                     </h2>
                 </motion.div>
@@ -188,7 +191,7 @@ export default function Home() {
                         delay: 0.4,
                         ease: [0.22, 1, 0.36, 1],
                     }}
-                    className="text-xl md:text-2xl text-[#0F1A20] leading-relaxed whitespace-pre-line"
+                    className="text-xl md:text-2xl leading-relaxed whitespace-pre-line"
                 >
                     {t.introduction.desc}
                 </motion.p>
@@ -207,10 +210,10 @@ export default function Home() {
                     transition={{ duration: 0.6 }}
                     className="mb-12"
                 >
-                    <h2 className="text-4xl font-bold text-[#F15025]/80 mb-4">
+                    <h2 className="text-4xl font-bold text-[#FFD166]/80 mb-4">
                         {t.projects.title}
                     </h2>
-                    <p className="text-xl text-[#0F1A20]">{t.projects.desc}</p>
+                    <p className="text-xl">{t.projects.desc}</p>
                 </motion.div>
 
                 {/* Grade de Projetos */}
@@ -263,18 +266,16 @@ export default function Home() {
                     transition={{ duration: 0.6 }}
                     className="mb-12"
                 >
-                    <h2 className="text-4xl font-bold text-[#F15025]/80 mb-4">
+                    <h2 className="text-4xl font-bold text-[#FFD166]/80 mb-4">
                         {t.experience.title}
                     </h2>
-                    <p className="text-xl text-[#0F1A20]">
-                        {t.experience.desc}
-                    </p>
+                    <p className="text-xl">{t.experience.desc}</p>
                 </motion.div>
 
                 {/* Grade de Experiências - Layout de Timeline */}
                 <div className="relative grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-24 items-start">
                     {/* Linha Vertical da Timeline (Apenas Desktop) */}
-                    <div className="absolute left-1/2 top-0 bottom-0 w-0.75 bg-linear-to-b from-[#F15025]/50 via-[#F15025]/10 to-transparent hidden md:block -translate-x-1/2" />
+                    <div className="absolute left-1/2 top-0 bottom-0 w-0.75 bg-linear-to-b from-[#FFD166]/50 via-[#FFD166]/10 to-transparent hidden md:block -translate-x-1/2" />
 
                     {/* Coluna Esquerda - Estática */}
                     <div className="flex flex-col gap-16 md:gap-32">
@@ -327,7 +328,7 @@ export default function Home() {
                         delay: 0.2,
                         ease: [0.22, 1, 0.36, 1],
                     }}
-                    className="text-5xl md:text-5xl font-extrabold text-[#F15025]/80 tracking-tight max-w-3xl leading-[1.1]"
+                    className="text-5xl md:text-5xl font-extrabold text-[#FFD166]/80 tracking-tight max-w-3xl leading-[1.1]"
                 >
                     {t.contact.title}
                 </motion.h1>
@@ -341,7 +342,7 @@ export default function Home() {
                         delay: 0.4,
                         ease: [0.22, 1, 0.36, 1],
                     }}
-                    className="mt-8 text-xl md:text-2xl text-[#0F1A20] max-w-4xl leading-relaxed"
+                    className="mt-8 text-xl md:text-2xl max-w-4xl leading-relaxed"
                 >
                     {t.contact.desc}
                 </motion.p>
@@ -364,7 +365,10 @@ export default function Home() {
                             fill="#000000"
                             viewBox="0 0 256 256"
                         >
-                            <path d="M216,24H40A16,16,0,0,0,24,40V216a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V40A16,16,0,0,0,216,24Zm0,192H40V40H216V216ZM96,112v64a8,8,0,0,1-16,0V112a8,8,0,0,1,16,0Zm88,28v36a8,8,0,0,1-16,0V140a20,20,0,0,0-40,0v36a8,8,0,0,1-16,0V112a8,8,0,0,1,15.79-1.78A36,36,0,0,1,184,140ZM100,84A12,12,0,1,1,88,72,12,12,0,0,1,100,84Z"></path>
+                            <path
+                                className="fill-white"
+                                d="M216,24H40A16,16,0,0,0,24,40V216a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V40A16,16,0,0,0,216,24Zm0,192H40V40H216V216ZM96,112v64a8,8,0,0,1-16,0V112a8,8,0,0,1,16,0Zm88,28v36a8,8,0,0,1-16,0V140a20,20,0,0,0-40,0v36a8,8,0,0,1-16,0V112a8,8,0,0,1,15.79-1.78A36,36,0,0,1,184,140ZM100,84A12,12,0,1,1,88,72,12,12,0,0,1,100,84Z"
+                            ></path>
                         </svg>
                     </a>
 
@@ -373,7 +377,7 @@ export default function Home() {
                             xmlns="http://www.w3.org/2000/svg"
                             width="32"
                             height="32"
-                            fill="#000000"
+                            fill="#fff"
                             viewBox="0 0 256 256"
                         >
                             <path d="M208.31,75.68A59.78,59.78,0,0,0,202.93,28,8,8,0,0,0,196,24a59.75,59.75,0,0,0-48,24H124A59.75,59.75,0,0,0,76,24a8,8,0,0,0-6.93,4,59.78,59.78,0,0,0-5.38,47.68A58.14,58.14,0,0,0,56,104v8a56.06,56.06,0,0,0,48.44,55.47A39.8,39.8,0,0,0,96,192v8H72a24,24,0,0,1-24-24A40,40,0,0,0,8,136a8,8,0,0,0,0,16,24,24,0,0,1,24,24,40,40,0,0,0,40,40H96v16a8,8,0,0,0,16,0V192a24,24,0,0,1,48,0v40a8,8,0,0,0,16,0V192a39.8,39.8,0,0,0-8.44-24.53A56.06,56.06,0,0,0,216,112v-8A58.14,58.14,0,0,0,208.31,75.68ZM200,112a40,40,0,0,1-40,40H112a40,40,0,0,1-40-40v-8a41.74,41.74,0,0,1,6.9-22.48A8,8,0,0,0,80,73.83a43.81,43.81,0,0,1,.79-33.58,43.88,43.88,0,0,1,32.32,20.06A8,8,0,0,0,119.82,64h32.35a8,8,0,0,0,6.74-3.69,43.87,43.87,0,0,1,32.32-20.06A43.81,43.81,0,0,1,192,73.83a8.09,8.09,0,0,0,1,7.65A41.72,41.72,0,0,1,200,104Z"></path>
@@ -392,7 +396,7 @@ export default function Home() {
                 </motion.p>
             </section>
 
-            <p className="mt-32 mb-4 flex w-full text-[#F15025]/40 justify-center">
+            <p className="mt-32 mb-4 flex w-full text-[#FFD166]/60 justify-center">
                 {t.copyright}
             </p>
         </main>

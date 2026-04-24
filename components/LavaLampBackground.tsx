@@ -23,10 +23,8 @@ const fragmentShader = /* glsl */ `
   uniform vec2  uResolution;
   uniform float uTime;
   uniform int   uBlobCount;
-  uniform vec4  uBlobs[50];
+  uniform vec4  uBlobs[8];
   uniform float uGlow;
-  uniform float uTubeRadius;
-  uniform float uTubeHeight;
   uniform vec3  uBaseColor;
   uniform vec3  uHotColor;
   uniform vec3  uCamPos;
@@ -34,10 +32,10 @@ const fragmentShader = /* glsl */ `
   uniform vec3  uCamUp;
   uniform vec3  uCamForward;
   uniform float uFov;
-  uniform float uMaxDist;
 
-  const int   MAX_STEPS = 140;
-  const float SURF_DIST = 0.0018;
+  const int   MAX_STEPS = 56;
+  const float SURF_DIST = 0.002;
+  const float MAX_DIST  = 8.0;
 
   float smin(float a, float b, float k) {
     float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
@@ -46,73 +44,47 @@ const fragmentShader = /* glsl */ `
 
   float sdSphere(vec3 p, vec3 c, float r) { return length(p - c) - r; }
 
-  float sdCylinder(vec3 p, float r, float h) {
-    vec2 d = abs(vec2(length(p.xz), p.y)) - vec2(r, h);
-    return min(max(d.x, d.y), 0.0) + length(max(d, 0.0));
-  }
-
+  /* Subtle surface wobble — baked into time so it's cheap */
   float wobble(vec3 p) {
-    vec3 q = p * 3.5;
-    float t = uTime * 0.6;
-    float w = sin(q.x + t) * sin(q.y - t * 1.2) * sin(q.z + t * 0.8);
-    w += 0.35 * sin(q.x * 1.7 - t * 0.7) * cos(q.z * 1.3 + t * 0.6);
-    return w;
-  }
-
-  float metaballField(vec3 p) {
-    float field = 0.0;
-    for (int i = 0; i < 50; i++) {
-      if (i >= uBlobCount) break;
-      vec3  c    = uBlobs[i].xyz;
-      float r    = uBlobs[i].w;
-      float dist = max(length(p - c), 0.0005);
-      field += (r * r) / (dist * dist);
-    }
-    return field;
+    float t = uTime * 0.5;
+    return sin(p.x * 4.0 + t) * sin(p.y * 3.7 - t * 1.1) * 0.018;
   }
 
   float sdMetaballs(vec3 p) {
     float d = 10.0;
-    for (int i = 0; i < 50; i++) {
+    for (int i = 0; i < 12; i++) {
       if (i >= uBlobCount) break;
-      d = smin(d, sdSphere(p, uBlobs[i].xyz, uBlobs[i].w), 0.2);
+      d = smin(d, sdSphere(p, uBlobs[i].xyz, uBlobs[i].w), 0.18);
     }
-    return d + wobble(p) * 0.02;
+    return d + wobble(p);
   }
 
-  float internalPointLight(vec3 p) {
-    float glow = 0.0;
-    for (int i = 0; i < 50; i++) {
+  float metaballField(vec3 p) {
+    float f = 0.0;
+    for (int i = 0; i < 12; i++) {
+      if (i >= uBlobCount) break;
+      float dist = max(length(p - uBlobs[i].xyz), 0.0005);
+      f += (uBlobs[i].w * uBlobs[i].w) / (dist * dist);
+    }
+    return f;
+  }
+
+  float internalGlow(vec3 p) {
+    float g = 0.0;
+    for (int i = 0; i < 12; i++) {
       if (i >= uBlobCount) break;
       float dist = length(p - uBlobs[i].xyz);
-      glow += (uBlobs[i].w * uBlobs[i].w) / (dist * dist + 0.02);
+      g += (uBlobs[i].w * uBlobs[i].w) / (dist * dist + 0.02);
     }
-    return glow;
-  }
-
-  float subsurfaceThickness(vec3 p, vec3 n) {
-    float thickness = 0.0;
-    float stepSize  = 0.06;
-    for (int i = 1; i <= 5; i++) {
-      float d = sdMetaballs(p - n * stepSize * float(i));
-      thickness += smoothstep(0.0, 0.08, -d);
-    }
-    return thickness / 5.0;
-  }
-
-  /* camera is INSIDE the tube, so we raycast the metaballs freely */
-  float sdScene(vec3 p) {
-    float dMeta = sdMetaballs(p);
-    float dTube = sdCylinder(p, uTubeRadius, uTubeHeight);
-    return max(dMeta, dTube);
+    return g;
   }
 
   vec3 getNormal(vec3 p) {
     vec2 e = vec2(0.001, 0.0);
     return normalize(vec3(
-      sdScene(p + e.xyy) - sdScene(p - e.xyy),
-      sdScene(p + e.yxy) - sdScene(p - e.yxy),
-      sdScene(p + e.yyx) - sdScene(p - e.yyx)
+      sdMetaballs(p + e.xyy) - sdMetaballs(p - e.xyy),
+      sdMetaballs(p + e.yxy) - sdMetaballs(p - e.yxy),
+      sdMetaballs(p + e.yyx) - sdMetaballs(p - e.yyx)
     ));
   }
 
@@ -120,84 +92,84 @@ const fragmentShader = /* glsl */ `
     float t = 0.0;
     for (int i = 0; i < MAX_STEPS; i++) {
       vec3  p = ro + rd * t;
-      float d = sdScene(p);
+      float d = sdMetaballs(p);
       if (d < SURF_DIST) { hitPos = p; field = metaballField(p); return t; }
-      t += d;
-      if (t > uMaxDist) break;
+      t += max(d, 0.01);
+      if (t > MAX_DIST) break;
     }
     field = 0.0;
     return -1.0;
   }
 
-  /* Deep dark interior background — subtle vertical glow */
-  vec3 insideBackground(vec3 rd) {
-    float upness = rd.y * 0.5 + 0.5;
-    vec3  deep   = vec3(0.01, 0.01, 0.015);
-    vec3  warm   = uBaseColor * 0.06;
-    vec3  bg     = mix(deep, warm, upness * upness);
-    /* faint radial vignette so edges are darker */
-    float rim = 1.0 - smoothstep(0.6, 1.0, length(rd.xz));
-    return bg * rim;
-  }
-
   void main() {
     vec2 uv  = (gl_FragCoord.xy - 0.5 * uResolution.xy) / uResolution.y;
-    vec2 ndc = uv * 2.0;
-
-    vec3 ro = uCamPos;
-    vec3 rd = normalize(uCamForward + ndc.x * uCamRight * uFov + ndc.y * uCamUp * uFov);
+    vec3 ro  = uCamPos;
+    vec3 rd  = normalize(uCamForward + uv.x * uCamRight * uFov + uv.y * uCamUp * uFov);
 
     vec3  hitPos;
     float field;
     float t = raymarch(ro, rd, hitPos, field);
 
-    vec3 bg = insideBackground(rd);
-
     if (t > 0.0) {
       vec3  n       = getNormal(hitPos);
       vec3  viewDir = normalize(ro - hitPos);
-      float heat    = clamp((hitPos.y / uTubeHeight) * 0.5 + 0.5, 0.0, 1.0);
-      vec3  lava    = mix(uBaseColor, uHotColor, heat);
 
-      vec3  lightA = normalize(vec3( 0.6,  0.8, 0.4));
-      vec3  lightB = normalize(vec3(-0.4,  0.2, 0.9));
-      float specA  = pow(max(dot(reflect(-lightA, n), viewDir), 0.0), 80.0);
-      float specB  = pow(max(dot(reflect(-lightB, n), viewDir), 0.0), 30.0);
+      /* colour: base at bottom, hot at top */
+      float heat   = clamp(hitPos.y * 0.5 + 0.5, 0.0, 1.0);
+      vec3  lava   = mix(uBaseColor, uHotColor, heat * heat);
+
+      /* lighting */
+      vec3  lightA  = normalize(vec3( 0.5,  0.9, 0.6));
+      vec3  lightB  = normalize(vec3(-0.6,  0.3, 0.8));
+      float specA   = pow(max(dot(reflect(-lightA, n), viewDir), 0.0), 72.0);
+      float specB   = pow(max(dot(reflect(-lightB, n), viewDir), 0.0), 28.0);
       float fresnel = pow(1.0 - max(dot(n, viewDir), 0.0), 3.0);
 
-      float inner      = clamp(metaballField(hitPos - n * 0.08) * 0.2, 0.0, 1.0);
-      float fieldGlow  = smoothstep(0.75, 1.6, field);
-      float thickness  = subsurfaceThickness(hitPos, n);
-      float internalG  = internalPointLight(hitPos);
-
-      float wrap  = 0.35;
+      float wrap  = 0.4;
       float wrapA = max((dot(n, lightA) + wrap) / (1.0 + wrap), 0.0);
       float wrapB = max((dot(n, lightB) + wrap) / (1.0 + wrap), 0.0);
 
-      vec3 diffuse  = lava * (0.15 + 0.85 * (wrapA * 0.9 + wrapB * 0.4));
-      vec3 spec     = vec3(1.0) * (specA + 0.4 * specB);
-      vec3 emission = lava * (0.25 + 0.75 * fresnel) * uGlow;
-      emission += lava * inner     * 0.9  * uGlow;
-      emission += lava * fieldGlow * 0.4  * uGlow;
-      emission += lava * thickness * (0.35 + internalG * 0.2) * uGlow;
-      emission += lava * internalG * 0.08 * uGlow;
+      float ig         = internalGlow(hitPos);
+      float fieldGlow  = smoothstep(0.6, 1.8, field);
+      float inner      = clamp(metaballField(hitPos - n * 0.07) * 0.18, 0.0, 1.0);
 
-      vec3 color = diffuse + spec * 0.8 + emission;
-      color = mix(color, color * color * 1.35, 0.35);
+      vec3 diffuse  = lava * (0.12 + 0.88 * (wrapA * 0.85 + wrapB * 0.35));
+      vec3 spec     = vec3(0.9) * (specA + 0.35 * specB);
+      vec3 emission = lava * (0.2 + 0.8 * fresnel) * uGlow;
+      emission     += lava * inner     * 0.8  * uGlow;
+      emission     += lava * fieldGlow * 0.35 * uGlow;
+      emission     += lava * ig        * 0.06 * uGlow;
 
-      gl_FragColor = vec4(color, 1.0);
+      vec3 color = diffuse + spec * 0.75 + emission;
+      /* mild contrast punch */
+      color = mix(color, color * color * 1.3, 0.3);
+
+      /* soft alpha fade at blob edges for transparent bg blending */
+      float edgeFade = clamp(1.0 - smoothstep(0.8, 1.05, length(hitPos.xy) / 2.2), 0.0, 1.0);
+      gl_FragColor = vec4(color, edgeFade);
     } else {
-      gl_FragColor = vec4(bg, 1.0);
+      /* fully transparent where no blob */
+      gl_FragColor = vec4(0.0);
     }
   }
 `;
 
-// ─── Constants & helpers ──────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
 
-const MAX_BLOBS = 50;
-const BLOB_COUNT = 6;
-const TUBE_RADIUS = 1;
-const TUBE_HEIGHT = 2;
+interface Blob {
+    pos: THREE.Vector3;
+    radius: number;
+    baseX: number;
+    baseY: number;
+    ampX: number;
+    ampY: number;
+    freqX: number;
+    freqY: number;
+    phaseX: number;
+    phaseY: number;
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function mulberry32(seed: number) {
     let t = seed >>> 0;
@@ -209,48 +181,27 @@ function mulberry32(seed: number) {
     };
 }
 
-function randFloatSpread(range: number, rand: () => number) {
-    return (rand() - 0.5) * range * 2;
-}
-
-interface Blob {
-    pos: THREE.Vector3;
-    vel: THREE.Vector3;
-    sizeFactor: number;
-    radius: number;
-    seed: number;
-    phase: number;
-    temp: number;
-}
-
-function randomInTube(radius: number, rand: () => number): THREE.Vector3 {
-    const angle = rand() * Math.PI * 2;
-    const safeRadius = Math.max(TUBE_RADIUS - radius * 1.2, 0.05);
-    const r = Math.sqrt(rand()) * safeRadius;
-    const y = THREE.MathUtils.lerp(
-        -TUBE_HEIGHT + radius,
-        TUBE_HEIGHT - radius,
-        rand(),
-    );
-    return new THREE.Vector3(Math.cos(angle) * r, y, Math.sin(angle) * r);
-}
+const MAX_BLOBS = 8;
 
 function initBlobs(rand: () => number, randSize: () => number): Blob[] {
     return Array.from({ length: MAX_BLOBS }, () => {
         const sizeFactor = randSize();
-        const radius = THREE.MathUtils.lerp(0.08, 0.2, sizeFactor);
+        const radius = 0.1 + sizeFactor * 0.22;
         return {
-            pos: randomInTube(radius, rand),
-            vel: new THREE.Vector3(
-                randFloatSpread(0.2, rand),
-                randFloatSpread(0.2, rand),
-                randFloatSpread(0.2, rand),
-            ),
-            sizeFactor,
+            pos: new THREE.Vector3(0, 0, 0),
             radius,
-            seed: rand() * 10,
-            phase: rand() * Math.PI * 2,
-            temp: rand(),
+            // spread centres across a wide area so they feel screen-filling
+            baseX: (rand() - 0.5) * 3.2,
+            baseY: (rand() - 0.5) * 1.8,
+            // each blob wanders in a lazy ellipse around its base
+            ampX: 0.18 + rand() * 0.32,
+            ampY: 0.14 + rand() * 0.28,
+            // slow frequencies — full cycle every ~25–55 s
+            freqX: 0.1 + rand() * 0.12,
+            freqY: 0.08 + rand() * 0.1,
+            // random start phase so no two blobs move in sync
+            phaseX: rand() * Math.PI * 2,
+            phaseY: rand() * Math.PI * 2,
         };
     });
 }
@@ -258,25 +209,20 @@ function initBlobs(rand: () => number, randSize: () => number): Blob[] {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 interface LavaLampBackgroundProps {
-    /** Primary blob colour. Default: warm orange-red */
     baseColor?: string;
-    /** Hot (top) blob colour. Default: bright yellow-orange */
     hotColor?: string;
-    /** Glow intensity 0–2. Default: 0.85 */
     glow?: number;
-    /** Bloom strength 0–1. Default: 0.2 */
     bloom?: number;
-    /** Speed multiplier. Default: 0.13 */
-    speed?: number;
+    blobCount?: number;
     className?: string;
 }
 
 export default function LavaLampBackground({
-    baseColor = "#ff4820",
-    hotColor = "#ffb040",
-    glow = 0.6,
-    bloom = 0.2,
-    speed = 0.13,
+    baseColor = "#1a1aff", // deeper indigo
+    hotColor = "#60efff", // icy cyan
+    glow = 0.55,
+    bloom = 0.18,
+    blobCount = 8,
     className = "",
 }: LavaLampBackgroundProps) {
     const mountRef = useRef<HTMLDivElement>(null);
@@ -285,38 +231,41 @@ export default function LavaLampBackground({
         const container = mountRef.current;
         if (!container) return;
 
-        // ── Renderer ──────────────────────────────────────────────────────────
+        const BLOB_COUNT = Math.min(blobCount, MAX_BLOBS);
+
+        // ── Renderer ────────────────────────────────────────────────────────────
         const renderer = new THREE.WebGLRenderer({
             antialias: true,
             alpha: true,
         });
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio * 1.4, 3));
+        renderer.setClearColor(0x000000, 0); // transparent clear
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
         renderer.setSize(container.clientWidth, container.clientHeight);
         renderer.outputColorSpace = THREE.SRGBColorSpace;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.05;
+        renderer.toneMappingExposure = 1.0;
         container.appendChild(renderer.domElement);
 
-        // ── Scene & cameras ───────────────────────────────────────────────────
+        // ── Scene ────────────────────────────────────────────────────────────────
         const scene = new THREE.Scene();
         const screenCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
-        /* Camera sitting INSIDE the tube, slightly below centre, tilted up */
-        const orbitCamera = new THREE.PerspectiveCamera(
-            50,
+        // Narrow FOV = more orthographic feel, camera straight on
+        const camera = new THREE.PerspectiveCamera(
+            32,
             container.clientWidth / container.clientHeight,
-            0.02,
-            50,
+            0.01,
+            20,
         );
-        orbitCamera.position.set(0, 0, 3.5);
-        orbitCamera.lookAt(0, 0, 0);
+        camera.position.set(0, 0, 3.8);
+        camera.lookAt(0, 0, 0);
 
-        // ── Blob simulation ───────────────────────────────────────────────────
+        // ── Blobs ────────────────────────────────────────────────────────────────
         const rand = mulberry32(42);
         const randSize = mulberry32(139);
         const blobs = initBlobs(rand, randSize);
 
-        // ── Uniforms ──────────────────────────────────────────────────────────
+        // ── Uniforms ─────────────────────────────────────────────────────────────
         const blobUniforms = Array.from(
             { length: MAX_BLOBS },
             () => new THREE.Vector4(),
@@ -333,8 +282,6 @@ export default function LavaLampBackground({
             uBlobCount: { value: BLOB_COUNT },
             uBlobs: { value: blobUniforms },
             uGlow: { value: glow },
-            uTubeRadius: { value: TUBE_RADIUS },
-            uTubeHeight: { value: TUBE_HEIGHT },
             uBaseColor: { value: new THREE.Color(baseColor) },
             uHotColor: { value: new THREE.Color(hotColor) },
             uCamPos: { value: new THREE.Vector3() },
@@ -342,7 +289,6 @@ export default function LavaLampBackground({
             uCamUp: { value: new THREE.Vector3() },
             uCamForward: { value: new THREE.Vector3() },
             uFov: { value: 1.0 },
-            uMaxDist: { value: 12.0 },
         };
 
         const mesh = new THREE.Mesh(
@@ -351,157 +297,107 @@ export default function LavaLampBackground({
                 uniforms,
                 vertexShader,
                 fragmentShader,
+                transparent: true, // needed so alpha=0 pixels are truly clear
             }),
         );
         mesh.frustumCulled = false;
         scene.add(mesh);
 
-        // ── Post-processing ───────────────────────────────────────────────────
+        // ── Post-processing ───────────────────────────────────────────────────────
         const composer = new EffectComposer(renderer);
         composer.addPass(new RenderPass(scene, screenCamera));
         const bloomPass = new UnrealBloomPass(
-            new THREE.Vector2(container.clientWidth, container.clientHeight),
+            new THREE.Vector2(
+                container.clientWidth / 2,
+                container.clientHeight / 2,
+            ),
             bloom,
-            0.6,
-            0.15,
+            0.5,
+            0.2,
         );
         composer.addPass(bloomPass);
 
-        // ── Camera vectors (reused every frame) ───────────────────────────────
-        const camPos = new THREE.Vector3();
-        const camRight = new THREE.Vector3();
-        const camUp = new THREE.Vector3();
-        const camForward = new THREE.Vector3();
-        const tempVec = new THREE.Vector3();
+        // ── Camera uniform helpers ────────────────────────────────────────────────
+        const _pos = new THREE.Vector3();
+        const _right = new THREE.Vector3();
+        const _up = new THREE.Vector3();
+        const _forward = new THREE.Vector3();
 
-        function updateCameraUniforms() {
-            orbitCamera.updateMatrixWorld();
-            orbitCamera.getWorldPosition(camPos);
-            orbitCamera.getWorldDirection(camForward);
-            camRight
-                .setFromMatrixColumn(orbitCamera.matrixWorld, 0)
-                .normalize();
-            camUp.setFromMatrixColumn(orbitCamera.matrixWorld, 1).normalize();
+        function syncCameraUniforms() {
+            camera.updateMatrixWorld();
+            camera.getWorldPosition(_pos);
+            camera.getWorldDirection(_forward);
+            _right.setFromMatrixColumn(camera.matrixWorld, 0).normalize();
+            _up.setFromMatrixColumn(camera.matrixWorld, 1).normalize();
 
-            uniforms.uCamPos.value.copy(camPos);
-            uniforms.uCamForward.value.copy(camForward);
-            uniforms.uCamRight.value.copy(camRight);
-            uniforms.uCamUp.value.copy(camUp);
+            uniforms.uCamPos.value.copy(_pos);
+            uniforms.uCamForward.value.copy(_forward);
+            uniforms.uCamRight.value.copy(_right);
+            uniforms.uCamUp.value.copy(_up);
             uniforms.uFov.value = Math.tan(
-                THREE.MathUtils.degToRad(orbitCamera.fov * 0.5),
+                THREE.MathUtils.degToRad(camera.fov * 0.5),
             );
-            uniforms.uMaxDist.value = camPos.length() + TUBE_HEIGHT * 3 + 6;
         }
 
-        // ── Simulation step ───────────────────────────────────────────────────
-        function stepSimulation(dt: number, time: number) {
-            const swirl = 0.9 * speed;
-            const buoyancy = 1.1 * speed;
-            const jitter = 0.25 * speed;
-            const heatRate = 0.35 * speed;
-            const coolRate = 0.32 * speed;
-            const relaxRate = 0.25 * speed;
-            const heatZone = -TUBE_HEIGHT * 0.35;
-            const coolZone = TUBE_HEIGHT * 0.35;
-
+        // ── Simulation — pure sine-wave orbits, no velocity ───────────────────────
+        function stepSimulation(time: number) {
             for (let i = 0; i < BLOB_COUNT; i++) {
-                const blob = blobs[i];
-
-                if (blob.pos.y < heatZone)
-                    blob.temp = Math.min(1, blob.temp + heatRate * dt);
-                else if (blob.pos.y > coolZone)
-                    blob.temp = Math.max(0, blob.temp - coolRate * dt);
-                else blob.temp += (0.5 - blob.temp) * relaxRate * dt;
-
-                const thermal = (blob.temp - 0.5) * 2.0;
-                const pulse = Math.sin(time * 0.6 + blob.phase) * 0.2 * speed;
-
-                blob.vel.y += (thermal * buoyancy + pulse) * dt;
-                blob.vel.x += -blob.pos.z * swirl * dt;
-                blob.vel.z += blob.pos.x * swirl * dt;
-                blob.vel.x += Math.sin(time * 0.7 + blob.seed) * jitter * dt;
-                blob.vel.z +=
-                    Math.cos(time * 0.6 + blob.seed * 1.3) * jitter * dt;
-                blob.vel.multiplyScalar(1.0 - 0.75 * dt);
-
-                tempVec.copy(blob.vel).multiplyScalar(dt);
-                blob.pos.add(tempVec);
-
-                // tube boundary
-                const radial = Math.hypot(blob.pos.x, blob.pos.z);
-                const limit = Math.max(TUBE_RADIUS - blob.radius * 0.9, 0.02);
-                if (radial > limit) {
-                    const s = limit / radial;
-                    blob.pos.x *= s;
-                    blob.pos.z *= s;
-                    blob.vel.x *= -0.35;
-                    blob.vel.z *= -0.35;
-                }
-                if (blob.pos.y > TUBE_HEIGHT - blob.radius) {
-                    blob.pos.y = TUBE_HEIGHT - blob.radius;
-                    blob.vel.y *= -0.35;
-                } else if (blob.pos.y < -TUBE_HEIGHT + blob.radius) {
-                    blob.pos.y = -TUBE_HEIGHT + blob.radius;
-                    blob.vel.y *= -0.35;
-                }
+                const b = blobs[i];
+                b.pos.x =
+                    b.baseX + Math.sin(time * b.freqX + b.phaseX) * b.ampX;
+                b.pos.y =
+                    b.baseY + Math.cos(time * b.freqY + b.phaseY) * b.ampY;
+                b.pos.z = 0;
             }
         }
 
-        function updateBlobUniforms() {
+        function syncBlobUniforms() {
             for (let i = 0; i < MAX_BLOBS; i++) {
-                const blob = blobs[i];
                 if (i < BLOB_COUNT) {
-                    blobUniforms[i].set(
-                        blob.pos.x,
-                        blob.pos.y,
-                        blob.pos.z,
-                        blob.radius,
-                    );
+                    const b = blobs[i];
+                    blobUniforms[i].set(b.pos.x, b.pos.y, b.pos.z, b.radius);
                 } else {
-                    blobUniforms[i].set(0, -10, 0, 0);
+                    blobUniforms[i].set(0, -99, 0, 0.001);
                 }
             }
         }
 
-        // ── Slow camera drift — feels like we're floating inside ──────────────
+        // ── Render loop ───────────────────────────────────────────────────────────
+        let animFrameId: number;
         let time = 0;
         let lastTime = performance.now();
-        const baseCamY = -0.2;
-        const baseCamZ = 0.55;
 
         function animate(now: number) {
-            const dt = Math.min((now - lastTime) / 1000, 0.033);
+            const dt = Math.min((now - lastTime) / 1000, 0.05);
             lastTime = now;
             time += dt;
 
-            stepSimulation(dt, time);
-            updateBlobUniforms();
+            stepSimulation(time);
+            syncBlobUniforms();
             uniforms.uTime.value = time;
-            updateCameraUniforms();
+            syncCameraUniforms();
 
             composer.render();
             animFrameId = requestAnimationFrame(animate);
         }
 
-        let animFrameId = requestAnimationFrame(animate);
+        animFrameId = requestAnimationFrame(animate);
 
-        // ── Resize ────────────────────────────────────────────────────────────
+        // ── Resize ────────────────────────────────────────────────────────────────
         const observer = new ResizeObserver(() => {
             const w = container.clientWidth;
             const h = container.clientHeight;
+            const pr = renderer.getPixelRatio();
             renderer.setSize(w, h);
             composer.setSize(w, h);
-            bloomPass.setSize(w, h);
-            orbitCamera.aspect = w / h;
-            orbitCamera.updateProjectionMatrix();
-            uniforms.uResolution.value.set(
-                w * renderer.getPixelRatio(),
-                h * renderer.getPixelRatio(),
-            );
+            bloomPass.setSize(w / 2, h / 2);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+            uniforms.uResolution.value.set(w * pr, h * pr);
         });
         observer.observe(container);
 
-        // ── Cleanup ───────────────────────────────────────────────────────────
+        // ── Cleanup ───────────────────────────────────────────────────────────────
         return () => {
             cancelAnimationFrame(animFrameId);
             observer.disconnect();
