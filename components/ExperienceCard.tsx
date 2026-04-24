@@ -7,6 +7,8 @@ interface ExperienceCardProps {
   time: string;
   desc: string;
   tech: string;
+  index?: number;
+  side?: "left" | "right";
 }
 
 export function ExperienceCard({
@@ -15,23 +17,44 @@ export function ExperienceCard({
   time,
   desc,
   tech,
+  index = 0,
+  side = "left",
 }: ExperienceCardProps) {
   return (
     <motion.div
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.2 }}
       variants={{
         hidden: { opacity: 0, y: 50 },
         visible: {
           opacity: 1,
           y: 0,
-          transition: { duration: 0.6, ease: "easeOut" },
+          transition: {
+            duration: 0.6,
+            ease: "easeOut",
+            delay: index * 0.1,
+          },
         },
       }}
       whileHover={{
         y: -8,
         transition: { duration: 0.1 },
       }}
-      className="bg-[#F3EFF5]/60 rounded-4xl p-8 flex flex-col md:flex-row justify-between gap-6 shadow-xl hover:bg-[#F15025]/20 transition-colors duration-100"
+      className="relative bg-[#F3EFF5]/60 rounded-4xl p-8 flex flex-col md:flex-row justify-between gap-6 shadow-xl hover:bg-[#F15025]/20 transition-colors duration-100 group w-full"
     >
+      {/* Timeline Indicator (Visible only on Desktop) */}
+      <div
+        className={`hidden md:block absolute top-12 w-4 h-4 rounded-full bg-[#F15025] border-4 border-[#F3EFF5] shadow-sm z-10 transition-transform duration-300 group-hover:scale-125
+          ${side === "left" ? "-right-14" : "-left-14"}`}
+      />
+
+      {/* Horizontal connecting line (Visible only on Desktop) */}
+      <div
+        className={`hidden md:block absolute top-14 h-px bg-[#F15025]/20 z-0
+          ${side === "left" ? "-right-12 w-12" : "-left-12 w-12"}`}
+      />
+
       <div className="flex flex-col max-w-xl">
         <div className="flex flex-col md:flex-row justify-between md:items-center mb-4">
           <h3 className="text-xl font-bold text-gray-900">{role}</h3>

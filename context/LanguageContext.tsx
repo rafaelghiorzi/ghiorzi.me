@@ -1,19 +1,21 @@
-'use client';
-import { createContext, useContext, useState, ReactNode } from 'react';
-import { dictionary, Lang } from '@/data/dictionary';
+"use client";
+import { dictionary, Lang } from "@/data/dictionary";
+import { createContext, ReactNode, useContext, useState } from "react";
 
 interface LanguageContextProps {
   lang: Lang;
   toggleLang: () => void;
-  t: typeof dictionary['pt'];
+  t: (typeof dictionary)["pt"];
 }
 
-const LanguageContext = createContext<LanguageContextProps | undefined>(undefined);
+const LanguageContext = createContext<LanguageContextProps | undefined>(
+  undefined,
+);
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-  const [lang, setLang] = useState<Lang>('pt');
-  
-  const toggleLang = () => setLang((prev) => (prev === 'pt' ? 'en' : 'pt'));
+  const [lang, setLang] = useState<Lang>("en");
+
+  const toggleLang = () => setLang((prev) => (prev === "pt" ? "en" : "pt"));
   const t = dictionary[lang];
 
   return (
@@ -28,5 +30,3 @@ export const useLang = () => {
   if (!context) throw new Error("useLang must be used within LanguageProvider");
   return context;
 };
-
-

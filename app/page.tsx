@@ -16,8 +16,8 @@ export default function Home() {
 
   // Setup para o Parallax do Hero
   const { scrollY } = useScroll();
-  const heroY = useTransform(scrollY, [0, 500], [0, 150]);
-  const opacity = useTransform(scrollY, [0, 300], [1, 0]);
+  const heroY = useTransform(scrollY, [0, 400], [0, 150]);
+  const opacity = useTransform(scrollY, [0, 1000], [1, 0]);
 
   /* LÓGICA DO PARALLAX:
     A coluna esquerda não terá animação de Y (ficará parada em y=0).
@@ -42,8 +42,9 @@ export default function Home() {
 
   // Helper para dividir os dados em duas colunas intercaladas
   const splitData = (data: any[]) => {
-    const left = data.filter((_, i) => i % 2 === 0);
-    const right = data.filter((_, i) => i % 2 !== 0);
+    const withIndex = data.map((item, i) => ({ ...item, originalIndex: i }));
+    const left = withIndex.filter((_, i) => i % 2 === 0);
+    const right = withIndex.filter((_, i) => i % 2 !== 0);
     return { left, right };
   };
 
@@ -55,14 +56,18 @@ export default function Home() {
       <Navbar />
 
       {/* HERO SECTION */}
-      <section id="home" className="pt-32 px-6 max-w-7xl mx-auto">
+      <section
+        id="home"
+        className="min-h-screen flex items-center px-6 max-w-[80%] mx-auto"
+      >
         <motion.div
           style={{ y: heroY, opacity }}
-          className="bg-[#F3EFF5]/60 rounded-[3rem] p-10 md:p-20 flex flex-col md:flex-row items-center justify-around min-h-[60vh]"
+          className="bg-[#F3EFF5]/60 rounded-[3rem] p-10 md:p-20 flex flex-col md:flex-row gap-4 items-center justify-around w-full shadow-2xl"
         >
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
             transition={{
               duration: 0.8,
               delay: 0.4,
@@ -77,23 +82,25 @@ export default function Home() {
               className="object-cover group-hover:scale-105 transition-transform duration-500 ease-in-out"
             />
           </motion.div>
-          <motion.div className="max-w-sm flex flex-col">
+          <motion.div className="max-w-3xl flex flex-col">
             <motion.h1
               initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
               transition={{
                 duration: 0.8,
                 delay: 0.2,
                 ease: [0.22, 1, 0.36, 1],
               }}
-              className="text-4xl md:text-5xl font-extrabold text-[#F15025] tracking-tight max-w-3xl leading-[1.1]"
+              className="text-4xl md:text-5xl font-extrabold text-[#F15025] tracking-tight w-full leading-[1.1]"
             >
               {t.hero.title}
             </motion.h1>
 
             <motion.p
               initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
               transition={{
                 duration: 0.8,
                 delay: 0.4,
@@ -105,7 +112,8 @@ export default function Home() {
             </motion.p>
             <motion.div
               initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
               transition={{
                 duration: 0.8,
                 delay: 0.2,
@@ -131,13 +139,14 @@ export default function Home() {
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
             transition={{
               duration: 0.8,
               delay: 0.4,
               ease: [0.22, 1, 0.36, 1],
             }}
-            className="relative rounded-3xl hidden md:block md:w-1/2 h-140 w-80 translate-y-32 bg-amber-50 overflow-hidden"
+            className="relative rounded-3xl max-w-xl hidden md:block md:w-1/2 h-140 w-80 translate-y-32 bg-amber-50 overflow-hidden"
           >
             <Image
               src="/eu.png"
@@ -153,12 +162,13 @@ export default function Home() {
       <section
         id="projects"
         ref={projectRef}
-        className="py-24 px-6 max-w-6xl mx-auto"
+        className="pb-24 pt-64 px-6 max-w-6xl mx-auto"
       >
         <motion.div
-          initial="hidden"
-          whileInView="visible"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6 }}
           className="mb-12"
         >
           <h2 className="text-4xl font-bold text-[#F15025]/80 mb-4">
@@ -179,6 +189,7 @@ export default function Home() {
                 img={proj.img}
                 tech={proj.tech}
                 link={proj.link}
+                index={proj.originalIndex}
               />
             ))}
           </div>
@@ -196,6 +207,7 @@ export default function Home() {
                 img={proj.img}
                 tech={proj.tech}
                 link={proj.link}
+                index={proj.originalIndex}
               />
             ))}
           </motion.div>
@@ -206,12 +218,13 @@ export default function Home() {
       <section
         id="experience"
         ref={experienceRef}
-        className="py-24 px-6 max-w-6xl mx-auto mb-20"
+        className="py-32 px-6 max-w-6xl mx-auto mb-20"
       >
         <motion.div
-          initial="hidden"
-          whileInView="visible"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6 }}
           className="mb-12"
         >
           <h2 className="text-4xl font-bold text-[#F15025]/80 mb-4">
@@ -220,10 +233,13 @@ export default function Home() {
           <p className="text-xl text-[#0F1A20]">{t.experience.desc}</p>
         </motion.div>
 
-        {/* Grade de Experiências */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+        {/* Grade de Experiências - Layout de Timeline */}
+        <div className="relative grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-24 items-start">
+          {/* Linha Vertical da Timeline (Apenas Desktop) */}
+          <div className="absolute left-1/2 top-0 bottom-0 w-0.75 bg-linear-to-b from-[#F15025]/50 via-[#F15025]/10 to-transparent hidden md:block -translate-x-1/2" />
+
           {/* Coluna Esquerda - Estática */}
-          <div className="flex flex-col gap-8">
+          <div className="flex flex-col gap-16 md:gap-32">
             {experiences.left.map((exp, idx) => (
               <ExperienceCard
                 key={`exp-l-${idx}`}
@@ -232,12 +248,17 @@ export default function Home() {
                 time={exp.time}
                 desc={exp.desc}
                 tech={exp.tech}
+                index={exp.originalIndex}
+                side="left"
               />
             ))}
           </div>
 
           {/* Coluna Direita - Começa baixa, sobe rápido (alcança a esquerda) */}
-          <motion.div style={{ y: expRightY }} className="flex flex-col gap-8">
+          <motion.div
+            style={{ y: expRightY }}
+            className="flex flex-col gap-16 md:gap-32 md:mt-48"
+          >
             {experiences.right.map((exp, idx) => (
               <ExperienceCard
                 key={`exp-r-${idx}`}
@@ -246,6 +267,8 @@ export default function Home() {
                 time={exp.time}
                 desc={exp.desc}
                 tech={exp.tech}
+                index={exp.originalIndex}
+                side="right"
               />
             ))}
           </motion.div>
@@ -259,7 +282,8 @@ export default function Home() {
       >
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
           transition={{
             duration: 0.8,
             delay: 0.2,
@@ -272,19 +296,21 @@ export default function Home() {
 
         <motion.p
           initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
           transition={{
             duration: 0.8,
             delay: 0.4,
             ease: [0.22, 1, 0.36, 1],
           }}
-          className="mt-8 text-xl md:text-2xl text-[#0F1A20] max-w-2xl leading-relaxed"
+          className="mt-8 text-xl md:text-2xl text-[#0F1A20] max-w-4xl leading-relaxed"
         >
           {t.contact.desc}
         </motion.p>
         <motion.p
           initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
           transition={{
             duration: 0.8,
             delay: 0.4,
@@ -315,8 +341,19 @@ export default function Home() {
               <path d="M208.31,75.68A59.78,59.78,0,0,0,202.93,28,8,8,0,0,0,196,24a59.75,59.75,0,0,0-48,24H124A59.75,59.75,0,0,0,76,24a8,8,0,0,0-6.93,4,59.78,59.78,0,0,0-5.38,47.68A58.14,58.14,0,0,0,56,104v8a56.06,56.06,0,0,0,48.44,55.47A39.8,39.8,0,0,0,96,192v8H72a24,24,0,0,1-24-24A40,40,0,0,0,8,136a8,8,0,0,0,0,16,24,24,0,0,1,24,24,40,40,0,0,0,40,40H96v16a8,8,0,0,0,16,0V192a24,24,0,0,1,48,0v40a8,8,0,0,0,16,0V192a39.8,39.8,0,0,0-8.44-24.53A56.06,56.06,0,0,0,216,112v-8A58.14,58.14,0,0,0,208.31,75.68ZM200,112a40,40,0,0,1-40,40H112a40,40,0,0,1-40-40v-8a41.74,41.74,0,0,1,6.9-22.48A8,8,0,0,0,80,73.83a43.81,43.81,0,0,1,.79-33.58,43.88,43.88,0,0,1,32.32,20.06A8,8,0,0,0,119.82,64h32.35a8,8,0,0,0,6.74-3.69,43.87,43.87,0,0,1,32.32-20.06A43.81,43.81,0,0,1,192,73.83a8.09,8.09,0,0,0,1,7.65A41.72,41.72,0,0,1,200,104Z"></path>
             </svg>
           </a>
+
+          <a href={t.contact.cv} target="_blank">
+            <Image
+              src={"/looking.png"}
+              alt="looking"
+              width={32}
+              height={32}
+              className="rounded-full"
+            />
+          </a>
         </motion.p>
       </section>
+
       <p className="mt-32 mb-4 flex w-full text-[#F15025]/40 justify-center">
         {t.copyright}
       </p>

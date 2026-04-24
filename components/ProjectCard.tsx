@@ -8,6 +8,7 @@ interface ProjectCardProps {
   img: string;
   tech: string;
   link?: string;
+  index?: number;
 }
 
 export function ProjectCard({
@@ -16,15 +17,23 @@ export function ProjectCard({
   img,
   tech,
   link,
+  index = 0,
 }: ProjectCardProps) {
   const cardContent = (
     <motion.div
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.1 }}
       variants={{
         hidden: { opacity: 0, y: 50 },
         visible: {
           opacity: 1,
           y: 0,
-          transition: { duration: 0.6, ease: "easeOut" },
+          transition: {
+            duration: 0.6,
+            ease: "easeOut",
+            delay: index * 0.1,
+          },
         },
       }}
       whileHover={{
@@ -59,7 +68,7 @@ export function ProjectCard({
         </div>
       </div>
       {img && img.trim() !== "" ? (
-        <div className="relative w-full rounded-3xl h-100 mt-4 overflow-hidden">
+        <div className="relative w-full rounded-3xl h-80 mt-4 overflow-hidden">
           <Image
             src={img}
             alt={title}
