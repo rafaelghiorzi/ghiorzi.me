@@ -158,6 +158,37 @@ export default function Home() {
         </motion.div>
       </section>
 
+      {/* INTRODUCTION SECTION */}
+      <section id="about" className="py-24 px-6 max-w-4xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{
+            duration: 0.8,
+            delay: 0.2,
+            ease: [0.22, 1, 0.36, 1],
+          }}
+        >
+          <h2 className="text-4xl font-bold text-[#F15025]/80 mb-8">
+            {t.introduction.title}
+          </h2>
+        </motion.div>
+        <motion.p
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{
+            duration: 0.8,
+            delay: 0.4,
+            ease: [0.22, 1, 0.36, 1],
+          }}
+          className="text-xl md:text-2xl text-[#0F1A20] leading-relaxed whitespace-pre-line"
+        >
+          {t.introduction.desc}
+        </motion.p>
+      </section>
+
       {/* PROJECTS SECTION */}
       <section
         id="projects"
