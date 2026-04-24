@@ -95,7 +95,7 @@ export default function BlobScene() {
       temp.copy(target).sub(mesh.position);
 
       const distance = temp.length();
-      const force = Math.min(distance * 0.01, 0.03);
+      const force = Math.min(distance * 0.02, 0.08);
 
       velocity.add(temp.normalize().multiplyScalar(force));
       velocity.multiplyScalar(0.7);
@@ -127,7 +127,7 @@ export default function BlobScene() {
           }
         }
 
-        const tension = 0.15;
+        const tension = 0.2;
         const finalRadius = 1 + (scale - 1) * (1 - tension);
 
         vertex.normalize().multiplyScalar(finalRadius);
@@ -142,7 +142,7 @@ export default function BlobScene() {
         const dir = velocity.clone().normalize();
 
         const base = 0.4 * (1 + Math.sin(time * 1.5) * 0.12); // Faster and more visible pulse
-        const stretch = speed_deform * 1.5;
+        const stretch = speed_deform * 1.0;
 
         mesh.scale.set(
           base + Math.abs(dir.x) * stretch,
@@ -168,5 +168,5 @@ export default function BlobScene() {
     };
   }, []);
 
-  return <div ref={mountRef} />;
+  return <div ref={mountRef} className="w-full h-12" />;
 }

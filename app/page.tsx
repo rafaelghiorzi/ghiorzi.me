@@ -86,7 +86,7 @@ export default function Home() {
                 delay: 0.2,
                 ease: [0.22, 1, 0.36, 1],
               }}
-              className="text-5xl md:text-5xl font-extrabold text-[#F15025] tracking-tight max-w-3xl leading-[1.1]"
+              className="text-4xl md:text-5xl font-extrabold text-[#F15025] tracking-tight max-w-3xl leading-[1.1]"
             >
               {t.hero.title}
             </motion.h1>
