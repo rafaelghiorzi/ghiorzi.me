@@ -56,7 +56,7 @@ export default function RootLayout({
 }>) {
     return (
         <LanguageProvider>
-            <html lang="en" className={`${serif.variable} h-full antialiased`}>
+            <html lang="en" className={`${serif.variable} antialiased`}>
                 <body>{children}</body>
             </html>
         </LanguageProvider>
