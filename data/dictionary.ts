@@ -16,7 +16,7 @@ export const dictionary = {
 
         introduction: {
             title: "Olá! Eu sou Rafael Ghiorzi",
-            desc: "Sou estudante de Ciência da Computação na Universidade de Brasília, com grande interesse em infraestrutura, sistemas distribuídos e engenharia backend. Gosto de entender como os sistemas se comportam em cenários reais — desde o desenvolvimento da aplicação até o ambiente onde ela é executada.\n\nAlém da tecnologia, tenho uma forte conexão com música e artes em geral. Toco bateria há vários anos, o que influenciou minha forma de pensar sobre disciplina, criatividade e prática contínua — aspectos que levo naturalmente para o meu trabalho como desenvolvedor.",
+            desc: "Estudo Ciência da Computação na Universidade de Brasília, com grande interesse em infraestrutura, sistemas distribuídos e desenvolvimento backend. Gosto de entender como os sistemas se comportam em cenários reais, desde o desenvolvimento até o ambiente de produção. No meu tempo livre, amo ouvir e fazer música. Sou baterista há anos e acredito fortemente que aprender um instrumento é a melhor forma de deseenvolver disciplina, criatividade e consistência, características que eu naturalmente trago no meu trabalho como desenvolvedor.",
         },
 
         projects: {
@@ -112,7 +112,7 @@ export const dictionary = {
 
         introduction: {
             title: "Hi, I'm Rafael Ghiorzi",
-            desc: "I'm a Computer Science student at the University of Brasília with a strong interest in infrastructure, distributed systems, and backend engineering. I enjoy understanding how systems behave in real-world conditions — from writing application code to setting up and operating the environments they run in.\n\nOutside of tech, I'm deeply connected to music and the arts. I've been playing drums for several years, which has shaped how I think about discipline, creativity, and long-term practice — skills I naturally bring into my work as a developer.",
+            desc: "I study Computer Science at University of Brasília, with an interest in infrastructure, distributed systems, and backend development. I like to understand how systems behave in real-world scenarios, from development to production environment. In my free time, I enjoy listening to and making music. I've been a drummer for several years, and I believe learning a musical instrument is the best way to develop discipline, creativity, and consistency, which I naturally bring to my work as a developer.",
         },
 
         projects: {
