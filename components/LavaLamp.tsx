@@ -1,9 +1,8 @@
 "use client";
 import { Environment, OrbitControls, useGLTF } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Suspense, useEffect, useMemo, useRef } from "react";
+import { useMemo, useRef } from "react";
 import * as THREE from "three";
-import Loader from "./Loader";
 
 // ─── Dimensões Reais do Modelo Refinadas ─────────────────────────────────────
 // Mantemos as constantes matemáticas de limite, mas ajustamos a geometria física
@@ -415,20 +414,6 @@ function MetaBalls({ blobCount = BLOB_COUNT }: { blobCount?: number }) {
 }
 
 // ─── Model ────────────────────────────────────────────────────────────────────
-
-/**
- * Componente auxiliar para disparar o sinal de pronto somente quando
- * o conteúdo dentro do Suspense terminou de carregar e foi montado.
- */
-function ReadySignal({ setReady }: { setReady: (val: boolean) => void }) {
-    useEffect(() => {
-        // Pequeno delay para garantir que a transição de opacidade seja suave
-        const timer = setTimeout(() => setReady(true), 500);
-        return () => clearTimeout(timer);
-    }, [setReady]);
-    return null;
-}
-
 function Model() {
     const { scene } = useGLTF("/glass.glb");
 
@@ -475,18 +460,13 @@ function Model() {
 
 // ─── Canvas ───────────────────────────────────────────────────────────────────
 
-export default function LavaLamp({
-    setReady,
-}: {
-    setReady: (val: boolean) => void;
-}) {
+export default function LavaLamp() {
     return (
         <Canvas
             className="bg-[radial-gradient(circle_at_50%_50%,#252e45_0%,#252526_55%)]"
             camera={{ position: [25, 2, 5], fov: 35 }}
             gl={{ antialias: true, alpha: true }}
         >
-            <Suspense fallback={<Loader />}>
                 <ambientLight intensity={0.4} />
                 <directionalLight position={[2, 4, 2]} intensity={1.5} />
 
@@ -508,10 +488,7 @@ export default function LavaLamp({
 
                 <MetaBalls blobCount={BLOB_COUNT} />
                 <Model />
-                <ReadySignal setReady={setReady} />
-
                 <OrbitControls target={[0, -1.5, 0]} />
-            </Suspense>
         </Canvas>
     );
 }

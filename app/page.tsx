@@ -84,11 +84,8 @@ export default function Home() {
 
     return (
         <>
-            {!isReady && <div className="fixed inset-0 bg-[#252526] z-999" />}
             <main
-                className={`min-h-screen min-w-screen bg-[#252526] transition-opacity duration-1000 ease-in-out ${
-                    isReady ? "opacity-100" : "opacity-0"
-                }`}
+                className={'min-h-screen min-w-screen bg-[#252526] transition-opacity duration-1000 ease-in-out'}
             >
                 <Navbar />
 
@@ -102,7 +99,7 @@ export default function Home() {
                     >
                         {/* Mobile LavaLamp */}
                         <motion.div className="relative block md:hidden h-80 rounded-3xl max-w-xl overflow-hidden mb-8">
-                            <LavaLamp setReady={setIsReady} />
+                            <LavaLamp />
                         </motion.div>
                         <motion.div className="flex flex-col py-4 max-w-md">
                             <motion.h1
@@ -157,7 +154,7 @@ export default function Home() {
                         </motion.div>
                         {/* Desktop LavaLamp */}
                         <motion.div className="relative hidden md:block rounded-3xl w-full h-100 max-w-xl overflow-hidden">
-                            <LavaLamp setReady={setIsReady} />
+                            <LavaLamp />
                         </motion.div>
                     </motion.article>
                 </section>
