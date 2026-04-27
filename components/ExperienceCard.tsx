@@ -41,7 +41,7 @@ export function ExperienceCard({
                 y: -8,
                 transition: { duration: 0.1 },
             }}
-            className="relative bg-[#161410]/60 rounded-4xl p-8 flex flex-col md:flex-row justify-between gap-6 shadow-xl hover:bg-[#FFD166]/20 transition-colors duration-100 group w-full"
+            className="relative bg-[#1e1e1e] rounded-4xl p-8 flex flex-col md:flex-row justify-between gap-6 shadow-xl hover:bg-[#FFD166]/20 transition-colors duration-100 group w-full"
         >
             <div className="flex flex-col max-w-xl">
                 <div className="flex flex-col md:flex-row justify-between md:items-center mb-4">

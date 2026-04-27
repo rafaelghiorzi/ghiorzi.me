@@ -1,9 +1,23 @@
 "use client";
 import { useLang } from "@/context/LanguageContext";
+import { motion, useMotionValueEvent, useScroll } from "framer-motion";
 import Link from "next/link";
+import { useState } from "react";
 
 export function Navbar() {
     const { t, lang, toggleLang } = useLang();
+    const { scrollY } = useScroll();
+    const [hidden, setHidden] = useState(false);
+
+    useMotionValueEvent(scrollY, "change", (latest) => {
+        const previous = scrollY.getPrevious() ?? 0;
+        // Hide if scrolling down and past the initial header area
+        if (latest > previous && latest > 150) {
+            setHidden(true);
+        } else {
+            setHidden(false);
+        }
+    });
 
     const handleScroll = (
         e: React.MouseEvent<HTMLAnchorElement, MouseEvent>,
@@ -25,7 +39,15 @@ export function Navbar() {
     };
 
     return (
-        <nav className="sticky flex justify-between items-center bg-[#111111] text-white w-full py-6 px-6 z-50">
+        <motion.nav
+            variants={{
+                visible: { y: 0 },
+                hidden: { y: "-100%" },
+            }}
+            animate={hidden ? "hidden" : "visible"}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            className="sticky top-0 flex justify-between items-center bg-[#1e1e1e]/80 backdrop-blur-sm text-white w-full py-6 px-6 z-50"
+        >
             <div>
                 <p className="text-sm text-white">{t.nav.name}</p>
                 <p className="text-xs text-gray-300/80">{t.nav.role}</p>
@@ -72,6 +94,6 @@ export function Navbar() {
             >
                 {lang === "pt" ? "EN" : "PT"}
             </button>
-        </nav>
+        </motion.nav>
     );
 }

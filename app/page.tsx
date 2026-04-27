@@ -5,12 +5,22 @@ import MetaBalls from "@/components/lavaLamp";
 import { Navbar } from "@/components/Navbar";
 import { ProjectCard } from "@/components/ProjectCard";
 import { useLang } from "@/context/LanguageContext";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, Variants } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
 export default function Home() {
     const { t } = useLang();
+
+    // Variants para animações de entrada de seção
+    const sectionContentVariants: Variants = {
+        hidden: { opacity: 0, y: 50 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: { duration: 1.5, ease: "easeOut" },
+        },
+    };
 
     // Controle do parallax no mobile
     const [isMobile, setIsMobile] = useState(false);
@@ -29,6 +39,7 @@ export default function Home() {
     // Referências para observar o scroll individual de cada seção
     const projectRef = useRef(null);
     const experienceRef = useRef(null);
+    const aboutRef = useRef(null);
 
     // Setup para o Parallax do Hero
     const { scrollY } = useScroll();
@@ -41,6 +52,13 @@ export default function Home() {
         offset: ["start end", "end start"],
     });
     const projectRightY = useTransform(projectScroll, [0, 1], [150, -150]);
+
+    // Parallax Imagem About
+    const { scrollYProgress: aboutScroll } = useScroll({
+        target: aboutRef,
+        offset: ["start end", "end start"],
+    });
+    const aboutImageY = useTransform(aboutScroll, [0, 1], ["-15%", "15%"]);
 
     // Parallax Experiências (Apenas coluna direita)
     const { scrollYProgress: expScroll } = useScroll({
@@ -64,25 +82,52 @@ export default function Home() {
     const experiences = splitData(t.expData);
 
     return (
-        <main className="min-h-screen min-w-screen bg-[#1e1e1e]">
+        <main className="min-h-screen min-w-screen bg-[#252526]">
             <Navbar />
 
-            <section id="home" className="flex justify-center">
+            <section id="home" className="flex justify-center py-20 md:py-32">
                 <motion.article
-                    style={{ y: isMobile ? 100 : heroY, opacity }}
+                    style={{ y: isMobile ? 0 : heroY, opacity }}
                     className="flex flex-col md:flex-row justify-between w-5xl p-8"
                 >
                     <motion.div className="relative block md:hidden rounded-3xl max-w-xl overflow-hidden mb-8">
                         <MetaBalls className="w-full h-80 rounded-2xl overflow-hidden" />
                     </motion.div>
                     <motion.div className="flex flex-col py-4 max-w-md">
-                        <motion.h1 className="text-white text-4xl md:text-5xl font-bold mb-4">
+                        <motion.h1
+                            initial={{ opacity: 0, y: 100 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{
+                                duration: 1,
+                                delay: 0.5,
+                                ease: "easeInOut",
+                            }}
+                            className="text-white text-4xl md:text-5xl font-bold mb-4"
+                        >
                             {t.hero.title}
                         </motion.h1>
-                        <motion.p className="text-gray-300/80 text-md md:text-xl font">
+                        <motion.p
+                            initial={{ opacity: 0, y: 50 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{
+                                delay: 1,
+                                duration: 1,
+                                ease: "easeInOut",
+                            }}
+                            className="text-gray-300/80 text-md md:text-xl font"
+                        >
                             {t.hero.desc}
                         </motion.p>
-                        <motion.div className="text-white flex flex-row gap-4 mt-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{
+                                delay: 1.5,
+                                duration: 1,
+                                ease: "easeInOut",
+                            }}
+                            className="text-white flex flex-row gap-4 mt-4"
+                        >
                             <a
                                 className="hover:underline hover:text-[#FFD166] transition-all duration-200"
                                 href={t.contact.linkedin}
@@ -105,21 +150,41 @@ export default function Home() {
                 </motion.article>
             </section>
 
-            <section id="about" className="flex justify-center">
-                <motion.article className="flex flex-col md:flex-row md:gap-8 w-5xl p-8">
-                    <div className="relative w-50 mb-8 md:mb-0 md:w-full h-80 md:h-auto rounded-3xl overflow-hidden">
-                        <Image
-                            src="/eu.png"
-                            alt="about profile"
-                            fill
-                            className="object-cover"
-                        />
+            <section
+                id="about"
+                ref={aboutRef}
+                className="flex justify-center py-32 md:py-32"
+            >
+                <motion.article
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, amount: 0.3 }}
+                    variants={sectionContentVariants}
+                    className="flex flex-col md:flex-row md:gap-16 w-5xl p-8 items-center"
+                >
+                    <div className="relative w-full md:w-1/2 h-112.5 rounded-3xl overflow-hidden shadow-2xl">
+                        <motion.div
+                            style={{ y: aboutImageY }}
+                            initial={{ scale: 1.3 }}
+                            whileInView={{ scale: 1 }}
+                            transition={{ duration: 1.5, ease: "easeOut" }}
+                            className="relative w-full h-[120%]"
+                        >
+                            <Image
+                                src="/eu.png"
+                                alt="about profile"
+                                fill
+                                className="object-cover top-[-10%]"
+                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                loading="eager"
+                            />
+                        </motion.div>
                     </div>
-                    <div className="flex flex-col">
+                    <div className="flex flex-col md:w-1/2 mt-12 md:mt-0">
                         <h2 className="text-white text-3xl md:text-4xl font-bold mb-4">
                             {t.introduction.title}
                         </h2>
-                        <p className="text-gray-300/80">
+                        <p className="text-gray-300/80 text-lg leading-relaxed">
                             {t.introduction.desc}
                         </p>
                     </div>
@@ -129,9 +194,15 @@ export default function Home() {
             <section
                 id="projects"
                 ref={projectRef}
-                className="flex justify-center"
+                className="flex justify-center py-32 md:py-32"
             >
-                <motion.article className="flex flex-col justify-center items-center w-5xl p-8">
+                <motion.article
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, amount: 0.1 }}
+                    variants={sectionContentVariants}
+                    className="flex flex-col justify-center items-center w-5xl p-8"
+                >
                     <motion.div className="flex flex-col text-center max-w-xl">
                         <h2 className="text-white text-3xl md:text-4xl font-bold mb-4">
                             {t.projects.title}
@@ -181,9 +252,15 @@ export default function Home() {
             <section
                 id="experience"
                 ref={experienceRef}
-                className="flex justify-center"
+                className="flex justify-center py-32 md:py-32"
             >
-                <motion.article className="flex flex-col justify-center items-center w-5xl p-8">
+                <motion.article
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, amount: 0.1 }}
+                    variants={sectionContentVariants}
+                    className="flex flex-col justify-center items-center w-5xl p-8"
+                >
                     <motion.div className="flex flex-col text-center max-w-xl">
                         <motion.h1 className="text-white text-4xl md:text-5xl font-bold mb-4">
                             {t.experience.title}
