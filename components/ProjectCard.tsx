@@ -41,7 +41,7 @@ export function ProjectCard({
                 transition: { duration: 0.1 },
             }}
             // Lógica de cursor e hover original mantida
-            className={`bg-[#161410]/60 rounded-4xl p-8 flex flex-col justify-between gap-6 shadow-xl hover:bg-[#FFD166]/20 transition-colors duration-100 group ${
+            className={`bg-[#1e1e1e] rounded-4xl p-8 flex flex-col justify-between gap-6 shadow-xl hover:bg-[#FFD166]/20 transition-colors duration-100 group ${
                 link ? "cursor-pointer" : ""
             }`}
         >
@@ -74,6 +74,7 @@ export function ProjectCard({
                         alt={title}
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-500 ease-in-out"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
                 </div>
             ) : null}

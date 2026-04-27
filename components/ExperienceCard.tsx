@@ -41,20 +41,8 @@ export function ExperienceCard({
                 y: -8,
                 transition: { duration: 0.1 },
             }}
-            className="relative bg-[#161410]/60 rounded-4xl p-8 flex flex-col md:flex-row justify-between gap-6 shadow-xl hover:bg-[#FFD166]/20 transition-colors duration-100 group w-full"
+            className="relative bg-[#1e1e1e] rounded-4xl p-8 flex flex-col md:flex-row justify-between gap-6 shadow-xl hover:bg-[#FFD166]/20 transition-colors duration-100 group w-full"
         >
-            {/* Timeline Indicator (Visible only on Desktop) */}
-            <div
-                className={`hidden md:block absolute top-12 w-4 h-4 rounded-full bg-[#FFD166] border-4 border-[#F3EFF5] shadow-sm z-10 transition-transform duration-300 group-hover:scale-125
-          ${side === "left" ? "-right-14" : "-left-14"}`}
-            />
-
-            {/* Horizontal connecting line (Visible only on Desktop) */}
-            <div
-                className={`hidden md:block absolute top-14 h-px bg-[#FFD166]/20 z-0
-          ${side === "left" ? "-right-12 w-12" : "-left-12 w-12"}`}
-            />
-
             <div className="flex flex-col max-w-xl">
                 <div className="flex flex-col md:flex-row justify-between md:items-center mb-4">
                     <h3 className="text-white text-xl font-bold">{role}</h3>
