@@ -58,7 +58,7 @@ export default function Home() {
         target: aboutRef,
         offset: ["start end", "end start"],
     });
-    const aboutImageY = useTransform(aboutScroll, [0, 1], ["-15%", "15%"]);
+    const aboutImageY = useTransform(aboutScroll, [0, 1], ["-15%", "20%"]);
 
     // Parallax Experiências (Apenas coluna direita)
     const { scrollYProgress: expScroll } = useScroll({
@@ -85,10 +85,10 @@ export default function Home() {
         <main className="min-h-screen min-w-screen bg-[#252526]">
             <Navbar />
 
-            <section id="home" className="flex justify-center py-20 md:py-32">
+            <section id="home" className="flex justify-center py-10 md:py-32">
                 <motion.article
                     style={{ y: isMobile ? 0 : heroY, opacity }}
-                    className="flex flex-col md:flex-row justify-between w-5xl p-8"
+                    className="flex flex-col md:flex-row justify-between w-5xl p-4"
                 >
                     <motion.div className="relative block md:hidden rounded-3xl max-w-xl overflow-hidden mb-8">
                         <MetaBalls className="w-full h-80 rounded-2xl overflow-hidden" />
@@ -153,16 +153,16 @@ export default function Home() {
             <section
                 id="about"
                 ref={aboutRef}
-                className="flex justify-center py-32 md:py-32"
+                className="flex justify-center py-10 md:py-32"
             >
                 <motion.article
                     initial="hidden"
                     whileInView="visible"
                     viewport={{ once: true, amount: 0.3 }}
                     variants={sectionContentVariants}
-                    className="flex flex-col md:flex-row md:gap-16 w-5xl p-8 items-center"
+                    className="flex flex-col md:flex-row md:gap-16 w-5xl p-4 items-center"
                 >
-                    <div className="relative w-full md:w-1/2 h-112.5 rounded-3xl overflow-hidden shadow-2xl">
+                    <div className="relative w-full md:w-1/3 h-112.5 rounded-3xl overflow-hidden shadow-2xl">
                         <motion.div
                             style={{ y: aboutImageY }}
                             initial={{ scale: 1.3 }}
@@ -174,7 +174,7 @@ export default function Home() {
                                 src="/eu.png"
                                 alt="about profile"
                                 fill
-                                className="object-cover top-[-10%]"
+                                className="object-cover"
                                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                 loading="eager"
                             />
@@ -194,14 +194,14 @@ export default function Home() {
             <section
                 id="projects"
                 ref={projectRef}
-                className="flex justify-center py-32 md:py-32"
+                className="flex justify-center py-10 md:py-32"
             >
                 <motion.article
                     initial="hidden"
                     whileInView="visible"
                     viewport={{ once: true, amount: 0.1 }}
                     variants={sectionContentVariants}
-                    className="flex flex-col justify-center items-center w-5xl p-8"
+                    className="flex flex-col justify-center items-center w-5xl p-4"
                 >
                     <motion.div className="flex flex-col text-center max-w-xl">
                         <h2 className="text-white text-3xl md:text-4xl font-bold mb-4">
@@ -211,9 +211,9 @@ export default function Home() {
                     </motion.div>
 
                     {/* Grade de projetos */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start mt-12">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start mt-12">
                         {/* Coluna esquerda estática */}
-                        <div className="flex flex-col gap-8">
+                        <div className="flex flex-col gap-4">
                             {projects.left.map((proj, idx) => (
                                 <ProjectCard
                                     key={`proj-l-${idx}`}
@@ -231,7 +231,7 @@ export default function Home() {
                         <motion.div
                             // Condição aplicada: Y estático (0) se for mobile
                             style={{ y: isMobile ? 0 : projectRightY }}
-                            className="flex flex-col gap-8"
+                            className="flex flex-col gap-4"
                         >
                             {projects.right.map((proj, idx) => (
                                 <ProjectCard
@@ -252,14 +252,14 @@ export default function Home() {
             <section
                 id="experience"
                 ref={experienceRef}
-                className="flex justify-center py-32 md:py-32"
+                className="flex justify-center py-10 md:py-32"
             >
                 <motion.article
                     initial="hidden"
                     whileInView="visible"
                     viewport={{ once: true, amount: 0.1 }}
                     variants={sectionContentVariants}
-                    className="flex flex-col justify-center items-center w-5xl p-8"
+                    className="flex flex-col justify-center items-center w-5xl p-4"
                 >
                     <motion.div className="flex flex-col text-center max-w-xl">
                         <motion.h1 className="text-white text-4xl md:text-5xl font-bold mb-4">
@@ -271,9 +271,9 @@ export default function Home() {
                     </motion.div>
 
                     {/* Grade de projetos */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start mt-12">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start mt-12">
                         {/* Coluna esquerda estática */}
-                        <div className="flex flex-col gap-8">
+                        <div className="flex flex-col gap-4">
                             {experiences.left.map((exp, idx) => (
                                 <ExperienceCard
                                     key={`exp-l-${idx}`}
@@ -292,7 +292,7 @@ export default function Home() {
                         <motion.div
                             // Condição aplicada: Y estático (0) se for mobile
                             style={{ y: isMobile ? 0 : expRightY }}
-                            className="flex flex-col gap-8"
+                            className="flex flex-col gap-4"
                         >
                             {experiences.left.map((exp, idx) => (
                                 <ExperienceCard
@@ -312,7 +312,7 @@ export default function Home() {
             </section>
 
             <section id="contact" className="flex justify-center">
-                <motion.article className="flex flex-col justify-center items-center w-5xl p-8">
+                <motion.article className="flex flex-col justify-center items-center w-5xl p-4">
                     <motion.h1 className="text-white text-4xl md:text-5xl font-bold mb-4">
                         {t.contact.title}
                     </motion.h1>
