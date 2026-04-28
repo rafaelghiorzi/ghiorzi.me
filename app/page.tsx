@@ -84,21 +84,19 @@ export default function Home() {
 
     return (
         <>
-            <main
-                className={'min-h-screen min-w-screen bg-[#252526] transition-opacity duration-1000 ease-in-out'}
-            >
+            <main className={"min-h-screen min-w-screen bg-[#252526]"}>
                 <Navbar />
 
                 <section
                     id="home"
-                    className="flex justify-center py-10 md:py-32"
+                    className="flex justify-center py-4 md:py-32"
                 >
                     <motion.article
                         style={{ y: isMobile ? 0 : heroY, opacity }}
                         className="flex flex-col md:flex-row justify-between w-6xl p-4"
                     >
                         {/* Mobile LavaLamp */}
-                        <motion.div className="relative block md:hidden h-80 rounded-3xl max-w-xl overflow-hidden mb-8">
+                        <motion.div className="relative block md:hidden h-60 rounded-3xl max-w-xl overflow-hidden mb-8">
                             <LavaLamp />
                         </motion.div>
                         <motion.div className="flex flex-col py-4 max-w-md">
@@ -305,7 +303,7 @@ export default function Home() {
                                 style={{ y: isMobile ? 0 : expRightY }}
                                 className="flex flex-col gap-4"
                             >
-                                {experiences.left.map((exp, idx) => (
+                                {experiences.right.map((exp, idx) => (
                                     <ExperienceCard
                                         key={`exp-r-${idx}`}
                                         role={exp.role}

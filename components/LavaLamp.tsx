@@ -1,32 +1,32 @@
 "use client";
-import { Environment, OrbitControls, useGLTF } from "@react-three/drei";
+import { ContactShadows, Environment, useGLTF } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
 
 // ─── Glass Geometry Constants ─────────────────────────────────────────────────
-const GLASS_RADIUS_TOP    = 1.0;
+const GLASS_RADIUS_TOP = 1.0;
 const GLASS_RADIUS_BOTTOM = 1.87;
-const GLASS_TOP           = 2.7;
-const GLASS_BOTTOM        = -2.7;
-const GLASS_HEIGHT        = GLASS_TOP - GLASS_BOTTOM; // 5.4
-const MAX_BLOBS           = 8;
-const BLOB_COUNT          = 6;
-const OFFSET_Y            = 0.25;
+const GLASS_TOP = 2.7;
+const GLASS_BOTTOM = -2.7;
+const GLASS_HEIGHT = GLASS_TOP - GLASS_BOTTOM; // 5.4
+const MAX_BLOBS = 8;
+const BLOB_COUNT = 6;
+const OFFSET_Y = 0.25;
 
 // ─── Blob Type ────────────────────────────────────────────────────────────────
 interface Blob {
     radius: number;
-    homeX:  number;
-    homeZ:  number;
-    baseX:  number;
-    baseZ:  number;
-    ampX:   number;
-    ampY:   number;
-    ampZ:   number;
-    freqX:  number;
-    freqY:  number;
-    freqZ:  number;
+    homeX: number;
+    homeZ: number;
+    baseX: number;
+    baseZ: number;
+    ampX: number;
+    ampY: number;
+    ampZ: number;
+    freqX: number;
+    freqY: number;
+    freqZ: number;
     phaseX: number;
     phaseY: number;
     phaseZ: number;
@@ -36,25 +36,25 @@ interface Blob {
 function initBlobs(count: number): Blob[] {
     return Array.from({ length: count }, (_, i) => {
         // Distribute blobs evenly around the lamp
-        const angle  = (i / count) * Math.PI * 2 + Math.random() * 0.5;
+        const angle = (i / count) * Math.PI * 2 + Math.random() * 0.5;
         const spread = 0.4 + Math.random() * 0.6; // 0–1 of max radius
-        const hx     = Math.cos(angle) * spread;
-        const hz     = Math.sin(angle) * spread;
+        const hx = Math.cos(angle) * spread;
+        const hz = Math.sin(angle) * spread;
 
         return {
             radius: 0.5 + Math.random() * 0.38,
-            homeX:  hx,
-            homeZ:  hz,
-            baseX:  hx,
-            baseZ:  hz,
+            homeX: hx,
+            homeZ: hz,
+            baseX: hx,
+            baseZ: hz,
             // XZ orbit — kept modest so blobs stay inside the cone
-            ampX:   0.15 + Math.random() * 0.25,
-            ampZ:   0.15 + Math.random() * 0.25,
+            ampX: 0.15 + Math.random() * 0.25,
+            ampZ: 0.15 + Math.random() * 0.25,
             // Y convection — full vertical travel, slow so motion feels lava-like
-            ampY:   2.2  + Math.random() * 1,
-            freqX:  0.04 + Math.random() * 0.06,
-            freqY:  0.05 + Math.random() * 0.07,
-            freqZ:  0.04 + Math.random() * 0.06,
+            ampY: 2.2 + Math.random() * 1,
+            freqX: 0.04 + Math.random() * 0.06,
+            freqY: 0.05 + Math.random() * 0.07,
+            freqZ: 0.04 + Math.random() * 0.06,
             phaseX: (i / count) * Math.PI * 2,
             phaseY: Math.random() * Math.PI * 2,
             phaseZ: Math.random() * Math.PI * 2,
@@ -76,7 +76,7 @@ function confine(x: number, y: number, z: number, blobR: number) {
     // but keep them from clipping above the top
     y = Math.max(GLASS_BOTTOM + blobR * 0.15, Math.min(GLASS_TOP - blobR, y));
     const maxR = Math.max(glassRadiusAt(y) - blobR * 0.75, 0);
-    const r2d  = Math.sqrt(x * x + z * z);
+    const r2d = Math.sqrt(x * x + z * z);
     if (r2d > maxR) {
         const s = maxR / Math.max(r2d, 0.0001);
         x *= s;
@@ -97,15 +97,6 @@ const vertexShader = /* glsl */ `
 `;
 
 // ─── Fragment Shader ──────────────────────────────────────────────────────────
-// Key upgrades vs the original:
-//   • smin()  – smooth-minimum for organic merging (from LavaLampBackground)
-//   • SDF raymarch via sdMetaballs() instead of potential-field threshold
-//   • wobble() – per-surface Perlin noise for geoid surfaces
-//   • internalGlow() – richer volumetric emission pass
-//   • Two-light wrap diffuse + dual specular
-//   • Fresnel + field-strength glow layers
-//   • Contrast crush: mix(c, c*c*1.3, 0.3)
-//   • Cone clipping done cleanly in the SDF (no aggressive negative field hack)
 const fragmentShader = /* glsl */ `
   precision highp float;
 
@@ -366,35 +357,40 @@ const fragmentShader = /* glsl */ `
 // ─── MetaBalls Component ──────────────────────────────────────────────────────
 function MetaBalls({ blobCount = BLOB_COUNT }: { blobCount?: number }) {
     const meshRef = useRef<THREE.Mesh>(null);
-    const count   = Math.max(1, Math.min(blobCount, MAX_BLOBS));
-    const blobs   = useRef<Blob[]>(initBlobs(count));
+    const count = Math.max(1, Math.min(blobCount, MAX_BLOBS));
+    const blobs = useRef<Blob[]>(initBlobs(count));
 
     // Spring simulation state
     const simState = useRef(
-        blobs.current.map(b => ({ baseX: b.homeX, baseZ: b.homeZ }))
+        blobs.current.map((b) => ({ baseX: b.homeX, baseZ: b.homeZ })),
     );
 
     const blobUniforms = useRef(
-        Array.from({ length: MAX_BLOBS }, () => new THREE.Vector4(0, -99, 0, 0.001))
+        Array.from(
+            { length: MAX_BLOBS },
+            () => new THREE.Vector4(0, -99, 0, 0.001),
+        ),
     );
 
     const uniforms = useMemo(
         () => ({
-            uTime:             { value: 0 },
-            uOpacity:          { value: 0.97 },
-            uBlobCount:        { value: count },
-            uBlobs:            { value: blobUniforms.current },
-            uOffsetY:          { value: OFFSET_Y },
-            uGlassTop:         { value: GLASS_TOP },
-            uGlassBottom:      { value: GLASS_BOTTOM },
-            uGlassRadiusTop:   { value: GLASS_RADIUS_TOP },
-            uGlassRadiusBottom:{ value: GLASS_RADIUS_BOTTOM },
+            uTime: { value: 0 },
+            uOpacity: { value: 0.97 },
+            uBlobCount: { value: count },
+            uBlobs: { value: blobUniforms.current },
+            uOffsetY: { value: OFFSET_Y },
+            uGlassTop: { value: GLASS_TOP },
+            uGlassBottom: { value: GLASS_BOTTOM },
+            uGlassRadiusTop: { value: GLASS_RADIUS_TOP },
+            uGlassRadiusBottom: { value: GLASS_RADIUS_BOTTOM },
         }),
-        [count]
+        [count],
     );
 
     useFrame(({ clock }) => {
-        const mat = meshRef.current?.material as THREE.ShaderMaterial | undefined;
+        const mat = meshRef.current?.material as
+            | THREE.ShaderMaterial
+            | undefined;
         if (!mat) return;
 
         const t = clock.getElapsedTime();
@@ -405,7 +401,7 @@ function MetaBalls({ blobCount = BLOB_COUNT }: { blobCount?: number }) {
                 continue;
             }
 
-            const b   = blobs.current[i];
+            const b = blobs.current[i];
             const sim = simState.current[i];
 
             // Spring-return toward home position (prevents drift accumulation)
@@ -423,16 +419,23 @@ function MetaBalls({ blobCount = BLOB_COUNT }: { blobCount?: number }) {
             blobUniforms.current[i].set(x, y, z, b.radius);
         }
 
-        mat.uniforms.uTime.value    = t;
-        mat.uniforms.uBlobs.value   = blobUniforms.current;
-        mat.uniformsNeedUpdate      = true;
+        mat.uniforms.uTime.value = t;
+        mat.uniforms.uBlobs.value = blobUniforms.current;
+        mat.uniformsNeedUpdate = true;
     });
 
     return (
         <mesh ref={meshRef} renderOrder={1} position={[0, OFFSET_Y, 0]}>
             {/* Frustum volume that the raymarcher samples inside */}
             <cylinderGeometry
-                args={[GLASS_RADIUS_TOP, GLASS_RADIUS_BOTTOM, GLASS_HEIGHT, 64, 1, true]}
+                args={[
+                    GLASS_RADIUS_TOP,
+                    GLASS_RADIUS_BOTTOM,
+                    GLASS_HEIGHT,
+                    64,
+                    1,
+                    true,
+                ]}
             />
             <shaderMaterial
                 vertexShader={vertexShader}
@@ -455,30 +458,30 @@ function Model() {
         scene.traverse((child) => {
             if (!(child as THREE.Mesh).isMesh) return;
             const mesh = child as THREE.Mesh;
-            const mat  = mesh.material as THREE.MeshStandardMaterial;
+            const mat = mesh.material as THREE.MeshStandardMaterial;
 
             if (mat?.name === "Glass_Material") {
                 mesh.material = new THREE.MeshPhysicalMaterial({
-                    color:             new THREE.Color(0.85, 0.92, 1.0),
-                    transmission:      0.98,
-                    roughness:         0.02,
-                    metalness:         0.0,
-                    ior:               1.52,
-                    thickness:         0.4,
-                    transparent:       true,
-                    opacity:           0.12,
-                    envMapIntensity:   1.5,
-                    reflectivity:      0.8,
-                    depthWrite:        false,
+                    color: new THREE.Color(0.85, 0.92, 1.0),
+                    transmission: 0.98,
+                    roughness: 0.02,
+                    metalness: 0.0,
+                    ior: 1.52,
+                    thickness: 0.4,
+                    transparent: true,
+                    opacity: 0.12,
+                    envMapIntensity: 1.5,
+                    reflectivity: 0.8,
+                    depthWrite: false,
                 });
                 mesh.renderOrder = 2;
             }
 
             if (mat?.name === "Base_Material" || mat?.name === "Cap_Material") {
                 mesh.material = new THREE.MeshPhysicalMaterial({
-                    color:           new THREE.Color(0.65, 0.7, 0.75),
-                    metalness:       1.0,
-                    roughness:       0.12,
+                    color: new THREE.Color(0.65, 0.7, 0.75),
+                    metalness: 1.0,
+                    roughness: 0.12,
                     envMapIntensity: 2.0,
                 });
                 mesh.renderOrder = 3;
@@ -489,25 +492,63 @@ function Model() {
     return <primitive object={scene} />;
 }
 
+// ─── Scene Animation & Rigging ────────────────────────────────────────────────
+function LampScene() {
+    const groupRef = useRef<THREE.Group>(null);
+
+    useFrame((state, delta) => {
+        // Very slow rotation (approx 6 degrees per second)
+        if (groupRef.current) {
+            groupRef.current.rotation.y += delta * 0.2;
+        }
+        // Maintain the camera focus previously handled by OrbitControls
+        state.camera.lookAt(0, -1.5, 0);
+    });
+
+    return (
+        <group ref={groupRef}>
+            <MetaBalls blobCount={BLOB_COUNT} />
+            <Model />
+        </group>
+    );
+}
+
 // ─── Scene ────────────────────────────────────────────────────────────────────
 export default function LavaLamp() {
     return (
         <Canvas
-            className="bg-[radial-gradient(circle_at_50%_50%,#252e45_0%,#252526_55%)]"
+            className="transition-all"
+            style={{ pointerEvents: "none" }}
             camera={{ position: [25, 2, 5], fov: 35 }}
             gl={{ antialias: true, alpha: true }}
         >
             <ambientLight intensity={0.4} />
             <directionalLight position={[2, 4, 2]} intensity={1.5} />
 
-            <pointLight position={[0, -3, 0]} color="#656565" intensity={10} distance={10} />
-            <pointLight position={[0,  3, 0]} color="#686868" intensity={4}  distance={8}  />
+            <pointLight
+                position={[0, -3, 0]}
+                color="#656565"
+                intensity={10}
+                distance={10}
+            />
+            <pointLight
+                position={[0, 3, 0]}
+                color="#686868"
+                intensity={4}
+                distance={8}
+            />
 
             <Environment preset="studio" />
 
-            <MetaBalls blobCount={BLOB_COUNT} />
-            <Model />
-            <OrbitControls target={[0, -1.5, 0]} />
+            <ContactShadows
+                position={[0, -9, 0]}
+                opacity={0.5}
+                scale={20}
+                blur={3}
+                far={15}
+                color="#000000"
+            />
+            <LampScene />
         </Canvas>
     );
 }
