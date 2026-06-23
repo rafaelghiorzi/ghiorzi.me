@@ -2,7 +2,7 @@ export const dictionary = {
     pt: {
         nav: {
             name: "Rafael Ghiorzi",
-            role: "Desenvolvedor Backend",
+            role: "Infraestrutura & Backend",
             hero: "Início",
             exp: "Experiência",
             projects: "Projetos",
@@ -11,12 +11,12 @@ export const dictionary = {
 
         hero: {
             title: "Construindo sistemas para o mundo real",
-            desc: "Estudante de Ciência da Computação com foco em infraestrutura, backend e engenharia de sistemas.",
+            desc: "Estudante de Ciência da Computação focado em automação, observabilidade e infraestrutura, com base sólida em desenvolvimento backend.",
         },
 
         introduction: {
             title: "Olá! Eu sou Rafael Ghiorzi",
-            desc: "Estudo Ciência da Computação na Universidade de Brasília, com grande interesse em infraestrutura, sistemas distribuídos e desenvolvimento backend. Gosto de entender como os sistemas se comportam em cenários reais, desde o desenvolvimento até o ambiente de produção. No meu tempo livre, amo ouvir e fazer música. Sou baterista há anos e acredito fortemente que aprender um instrumento é a melhor forma de deseenvolver disciplina, criatividade e consistência, características que eu naturalmente trago no meu trabalho como desenvolvedor.",
+            desc: "Estudo Ciência da Computação na Universidade de Brasília, com grande interesse em infraestrutura, observabilidade e desenvolvimento backend. Gosto de entender como os sistemas se comportam em cenários reais, do desenvolvimento à produção. Mantenho um homelab para experimentar com containers, automação e monitoramento, e publiquei um pacote Python no PyPI. No meu tempo livre, amo ouvir e fazer música. Sou baterista há anos e acredito que aprender um instrumento é a melhor forma de desenvolver disciplina, criatividade e consistência, características que trago naturalmente para o meu trabalho como desenvolvedor.",
         },
 
         projects: {
@@ -27,36 +27,43 @@ export const dictionary = {
         projectsData: [
             {
                 title: "PdfPlucker",
-                desc: "Ferramenta de processamento de PDFs voltada para cargas em lote, com extração de dados estruturados (texto, tabelas e imagens), suportando execução paralela e aceleração por GPU.",
-                tech: "Python, CUDA, PyTorch, CLI",
+                desc: "Pacote Python publicado no PyPI para extração estruturada de texto, tabelas e imagens de PDFs em lote. Processou centenas de livros em pesquisas internas, substituindo ferramentas pagas, com execução paralela e aceleração por GPU.",
+                tech: "Python, PyPI, Docling, CLI",
                 img: "/plucker.png",
                 link: "https://github.com/rafaelghiorzi/pdfplucker",
             },
             {
                 title: "Homelab Cookbook",
-                desc: "Infraestrutura pessoal self-hosted onde experimento com redes, conteinerização, automação e configuração de sistemas em um ambiente controlado.",
-                tech: "Docker, Linux, Redes, GitHub Actions",
+                desc: "Laboratório de infraestrutura validado em máquinas virtuais: Proxmox, deploy de serviços em K3s com auto-scaling, provisionamento via Ansible e stack de observabilidade LGTM (Loki, Grafana, Tempo, Prometheus).",
+                tech: "Proxmox, K3s, Ansible, Grafana",
                 img: "",
                 link: "https://github.com/rafaelghiorzi/homelab-infra",
             },
             {
                 title: "Extração de Nomes – DOE São Paulo",
-                desc: "Projeto de pesquisa focado na extração de dados estruturados a partir de documentos históricos, utilizando visão computacional, OCR e modelos de linguagem.",
-                tech: "Python, YOLO, DocumentAI, LLMs",
+                desc: "Pipeline híbrido para extrair dados estruturados de documentos históricos (1982–2001), combinando detecção de layout (YOLO), OCR (Document AI) e LLMs. Atingiu 75% de recall na extração de nomes, superando OCR tradicional.",
+                tech: "Python, YOLO, Document AI, LLMs",
                 img: "",
                 link: "",
             },
             {
                 title: "RAG Publications",
-                desc: "Sistema baseado em RAG para consulta de dados públicos, projetado para lidar com dados estruturados e não estruturados, incluindo tabelas e imagens.",
-                tech: "Python, HuggingFace, Qdrant, Docker",
+                desc: "Sistema RAG multimodal e multiagente para consulta a um repositório de conhecimento. Indexou cerca de 1.200 documentos com latência de ~200ms na busca, com deploy em Docker.",
+                tech: "Python, FastAPI, Qdrant, Docker",
                 img: "/ipeapub.png",
                 link: "https://github.com/rafaelghiorzi/IpeaPub",
             },
             {
                 title: "Sistema de Gestão de Membros (FGM)",
-                desc: "Aplicação web desenvolvida para automatizar processos internos de uma empresa júnior, melhorando a organização e reduzindo trabalho manual.",
+                desc: "Sistema full-stack de gestão de membros e projetos de uma empresa júnior, usado por mais de 150 membros. Atuei como desenvolvedor e gerente do projeto, com API REST documentada, testes e CI/CD.",
                 tech: "Next.js, NestJS, PostgreSQL",
+                img: "",
+                link: "",
+            },
+            {
+                title: "Seu Caminho",
+                desc: "Plataforma social de rotas em rodovias, vencedora (1º lugar) do Hackathon de Inovação da ABCR 2026. Gera rotas personalizadas, compara trajetos entre usuários e identifica as concessionárias responsáveis. Construí o software completo.",
+                tech: "Plataforma Web, Geolocalização, Rotas",
                 img: "",
                 link: "",
             },
@@ -69,19 +76,26 @@ export const dictionary = {
 
         expData: [
             {
+                role: "Pesquisador de Iniciação Científica (PIBIC)",
+                company: "Universidade de Brasília — Redes Baseadas em Intenção",
+                time: "Jun. 2026 - Atual",
+                desc: "Pesquisa em Redes Baseadas em Intenção (IBN). Desenvolvo um coletor de telemetria adaptativo em formato OpenTelemetry, que ajusta dinamicamente o que coleta conforme as intenções instaladas na rede, usando machine learning para reduzir a sobrecarga de monitoramento.",
+                tech: "OpenTelemetry, Observabilidade, Machine Learning, Redes",
+            },
+            {
                 role: "Pesquisador em Ciência de Dados",
                 company:
                     "Instituto de Pesquisa Econômica Aplicada (IpeaData-Lab)",
                 time: "Fev. 2025 - Dez. 2025",
-                desc: "Atuação no desenvolvimento de pipelines de processamento de dados para transformar relatórios em datasets estruturados. Contribuição em projetos envolvendo arquiteturas RAG e pipelines de extração em múltiplas etapas.",
-                tech: "Python, RAG, Docker, Processamento de Dados",
+                desc: "Desenvolvimento de pipelines de dados e sistemas de IA. Construí um sistema RAG que indexou ~1.200 documentos com latência de ~200ms e publiquei o PdfPlucker no PyPI, substituindo ferramentas pagas. Deploy em Docker na infraestrutura interna.",
+                tech: "Python, FastAPI, Qdrant, Docker",
             },
             {
-                role: "Desenvolvedor de Software & Líder de Equipe",
+                role: "Desenvolvedor de Software & Líder de Projeto",
                 company: "Empresa Júnior de Computação – CJR",
                 time: "Out. 2023 - Fev. 2025",
-                desc: "Desenvolvimento de aplicações full-stack e liderança de equipes utilizando Scrum. Participação na construção de um sistema interno para automação de processos e melhoria da eficiência operacional.",
-                tech: "Next.js, NestJS, PostgreSQL",
+                desc: "Desenvolvi e liderei o FGM, sistema full-stack de gestão usado por mais de 150 membros, com API REST documentada, testes unitários e CI/CD via GitHub Actions. Atuei com Scrum/Kanban em sprints quinzenais.",
+                tech: "Next.js, NestJS, Prisma, CI/CD",
             },
         ],
 
@@ -98,7 +112,7 @@ export const dictionary = {
     en: {
         nav: {
             name: "Rafael Ghiorzi",
-            role: "Backend Developer",
+            role: "Infrastructure & Backend",
             hero: "Home",
             exp: "Experience",
             projects: "Projects",
@@ -107,12 +121,12 @@ export const dictionary = {
 
         hero: {
             title: "Building systems for the real world",
-            desc: "Computer Science student focused on infrastructure, backend systems, and practical engineering.",
+            desc: "Computer Science student focused on automation, observability, and infrastructure, with a solid foundation in backend development.",
         },
 
         introduction: {
             title: "Hi, I'm Rafael Ghiorzi",
-            desc: "I study Computer Science at University of Brasília, with an interest in infrastructure, distributed systems, and backend development. I like to understand how systems behave in real-world scenarios, from development to production environment. In my free time, I enjoy listening to and making music. I've been a drummer for several years, and I believe learning a musical instrument is the best way to develop discipline, creativity, and consistency, which I naturally bring to my work as a developer.",
+            desc: "I study Computer Science at the University of Brasília, with a strong interest in infrastructure, observability, and backend development. I like to understand how systems behave in real-world scenarios, from development to production. I run a homelab to experiment with containers, automation, and monitoring, and I've published a Python package on PyPI. In my free time, I love listening to and making music. I've been a drummer for years, and I believe learning an instrument is the best way to develop discipline, creativity, and consistency, traits I naturally bring to my work as a developer.",
         },
 
         projects: {
@@ -123,36 +137,43 @@ export const dictionary = {
         projectsData: [
             {
                 title: "PdfPlucker",
-                desc: "PDF processing tool designed for batch workloads, extracting structured data such as text, tables, and images with support for parallel execution and GPU acceleration.",
-                tech: "Python, CUDA, PyTorch, CLI",
+                desc: "Python package published on PyPI for structured extraction of text, tables, and images from PDFs in batch. Processed hundreds of books in internal research, replacing paid tools, with parallel execution and GPU acceleration.",
+                tech: "Python, PyPI, Docling, CLI",
                 img: "/plucker.png",
                 link: "https://github.com/rafaelghiorzi/pdfplucker",
             },
             {
                 title: "Homelab Cookbook",
-                desc: "Personal self-hosted infrastructure where I experiment with networking, containerization, automation, and system configuration in a controlled environment.",
-                tech: "Docker, Linux, Networking, GitHub Actions",
+                desc: "Infrastructure lab validated on virtual machines: Proxmox, service deployment on K3s with auto-scaling, provisioning via Ansible, and an LGTM observability stack (Loki, Grafana, Tempo, Prometheus).",
+                tech: "Proxmox, K3s, Ansible, Grafana",
                 img: "",
                 link: "https://github.com/rafaelghiorzi/homelab-infra",
             },
             {
                 title: "Name Extraction – DOE São Paulo",
-                desc: "Research project focused on extracting structured data from historical documents using a combination of computer vision, OCR, and language models.",
-                tech: "Python, YOLO, DocumentAI, LLMs",
+                desc: "Hybrid pipeline to extract structured data from historical documents (1982–2001), combining layout detection (YOLO), OCR (Document AI), and LLMs. Reached 75% recall on name extraction, outperforming traditional OCR.",
+                tech: "Python, YOLO, Document AI, LLMs",
                 img: "",
                 link: "",
             },
             {
                 title: "RAG Publications",
-                desc: "Retrieval-augmented system for querying public datasets, designed to handle structured and unstructured data including tables and images.",
-                tech: "Python, HuggingFace, Qdrant, Docker",
+                desc: "Multimodal, multi-agent RAG system for querying a knowledge repository. Indexed around 1,200 documents with ~200ms search latency, deployed with Docker.",
+                tech: "Python, FastAPI, Qdrant, Docker",
                 img: "/ipeapub.png",
                 link: "https://github.com/rafaelghiorzi/IpeaPub",
             },
             {
                 title: "Member Management Platform (FGM)",
-                desc: "Web application built to automate internal processes for a junior enterprise, improving organization and reducing manual work.",
+                desc: "Full-stack platform for managing members and projects of a junior enterprise, used by over 150 members. I worked as developer and project manager, with a documented REST API, tests, and CI/CD.",
                 tech: "Next.js, NestJS, PostgreSQL",
+                img: "",
+                link: "",
+            },
+            {
+                title: "Seu Caminho",
+                desc: "Social platform for routes on toll highways, winner (1st place) of the ABCR Innovation Hackathon 2026. Generates personalized routes, compares trips between users, and identifies the responsible operators. I built the complete software.",
+                tech: "Web Platform, Geolocation, Routing",
                 img: "",
                 link: "",
             },
@@ -165,19 +186,26 @@ export const dictionary = {
 
         expData: [
             {
+                role: "Undergraduate Researcher (PIBIC)",
+                company: "University of Brasília — Intent-Based Networking",
+                time: "Jun. 2026 - Present",
+                desc: "Research on Intent-Based Networking (IBN). I'm building an adaptive telemetry collector in OpenTelemetry format that dynamically adjusts what it collects based on the intents installed on the network, using machine learning to reduce monitoring overhead.",
+                tech: "OpenTelemetry, Observability, Machine Learning, Networking",
+            },
+            {
                 role: "Data Science Researcher",
                 company:
                     "Institute for Applied Economic Research (IpeaData-Lab)",
                 time: "Feb. 2025 - Dec. 2025",
-                desc: "Worked on data processing pipelines and systems for transforming reports into structured datasets. Contributed to projects involving RAG architectures and multi-stage extraction pipelines.",
-                tech: "Python, RAG, Docker, Data Processing",
+                desc: "Built data pipelines and AI systems. I developed a RAG system that indexed ~1,200 documents with ~200ms latency and published PdfPlucker on PyPI, replacing paid tools. Deployed with Docker on internal infrastructure.",
+                tech: "Python, FastAPI, Qdrant, Docker",
             },
             {
-                role: "Software Developer & Team Lead",
+                role: "Software Developer & Project Lead",
                 company: "Junior Computing Enterprise – CJR",
                 time: "Oct. 2023 - Feb. 2025",
-                desc: "Developed full-stack applications and led small teams using Scrum. Helped build an internal system to automate workflows and improve operational efficiency.",
-                tech: "Next.js, NestJS, PostgreSQL",
+                desc: "Developed and led the FGM, a full-stack management system used by over 150 members, with a documented REST API, unit tests, and CI/CD via GitHub Actions. Worked with Scrum/Kanban in two-week sprints.",
+                tech: "Next.js, NestJS, Prisma, CI/CD",
             },
         ],
 
